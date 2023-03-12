@@ -33,15 +33,78 @@ void GotoXY(int x, int y)
 
 void DrawBoard(int pSize)
 {
-	for (int i = 0; i <= pSize; i++)
-	{
-		for (int j = 0; j <= pSize; j++)
-		{
-			GotoXY(LEFT + 4 * i, TOP + 2 * j);
-			cout << ".";
+	for (int i = 0; i <= pSize; i++) {
+
+		for (int j = 0; j <= pSize; j++) {
+
+
+			if ((i == 0 && j == 0)) {
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(218) << char(196) << char(196) << char(196);
+				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
+				cout << char(179);
+			}
+			// duong duoi
+			else if ((i == pSize && j == 0))
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(191);
+				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
+				cout << char(179);
+			}
+			// goc trai duoi
+			else if ((i == 0 && j == pSize))
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(192) << char(196) << char(196) << char(196);
+			}
+			// goc phai duoi
+			else if ((i == pSize && j == pSize))
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(217);
+			}
+			//duong tren
+			else if ((i != 0 && j == 0) && (i != pSize && j == 0))
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(194) << char(196) << char(196) << char(196);
+				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
+				cout << char(179);
+			}
+			// duong duoi
+			else if ((i != pSize && j == pSize) && (i != 0 && j == pSize))
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(193) << char(196) << char(196) << char(196);
+			}
+			// ben trai
+			else if (i == 0 && j != pSize)
+
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(195) << char(196) << char(196) << char(196);
+				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
+				cout << char(179);
+			}
+			else if (i == pSize && j != pSize)
+
+			{
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(180);
+				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
+				cout << char(179);
+
+			}
+			else {
+				GotoXY(LEFT + 4 * i, TOP + 2 * j);
+				cout << char(197) << char(196) << char(196) << char(196);
+				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
+				cout << char(179);
+			}
 		}
 	}
-	GotoXY(LEFT+2, TOP+1);
+	GotoXY(_X + 0, _Y + 0);
 }
 
 int ProcessFinish(int pWhoWin)
