@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <iostream>
 #include <conio.h>
 using namespace std;
@@ -33,12 +33,12 @@ void GotoXY(int x, int y)
 
 void DrawBoard(int pSize)
 {
-	for (int i = 0; i <= pSize; i++) {
-
-		for (int j = 0; j <= pSize; j++) {
-
-
-			if ((i == 0 && j == 0)) {
+	for (int i = 0; i <= pSize; i++)
+	{
+		for (int j = 0; j <= pSize; j++)
+		{
+			if ((i == 0 && j == 0))
+			{
 				GotoXY(LEFT + 4 * i, TOP + 2 * j);
 				cout << char(218) << char(196) << char(196) << char(196);
 				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
@@ -80,7 +80,6 @@ void DrawBoard(int pSize)
 			}
 			// ben trai
 			else if (i == 0 && j != pSize)
-
 			{
 				GotoXY(LEFT + 4 * i, TOP + 2 * j);
 				cout << char(195) << char(196) << char(196) << char(196);
@@ -88,15 +87,14 @@ void DrawBoard(int pSize)
 				cout << char(179);
 			}
 			else if (i == pSize && j != pSize)
-
 			{
 				GotoXY(LEFT + 4 * i, TOP + 2 * j);
 				cout << char(180);
 				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
 				cout << char(179);
-
 			}
-			else {
+			else
+			{
 				GotoXY(LEFT + 4 * i, TOP + 2 * j);
 				cout << char(197) << char(196) << char(196) << char(196);
 				GotoXY(LEFT + 4 * i, TOP + (2 * j) + 1);
@@ -105,6 +103,11 @@ void DrawBoard(int pSize)
 		}
 	}
 	GotoXY(_X + 0, _Y + 0);
+}
+
+void ChangeBackgrColor()
+{
+	system("color F0");
 }
 
 int ProcessFinish(int pWhoWin)
