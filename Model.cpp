@@ -35,7 +35,7 @@ void GabageCollect()
 bool isfull()
 {
 	int dem = 0;
-	for (int i = 0; i < BOARD_SIZE; i++) 
+	for (int i = 0; i < BOARD_SIZE; i++)
 	{
 		for (int j = 0; j < BOARD_SIZE; j++)
 		{
@@ -107,11 +107,11 @@ bool xet_dong() {
 bool xet_cot()
 {
 	int demO = 0, demX = 0;
-	for (int j = 0;j < BOARD_SIZE;j++)
+	for (int j = 0; j < BOARD_SIZE; j++)
 	{
 		demO = 0;
 		demX = 0;
-		for (int i = 0;i < BOARD_SIZE;i++)
+		for (int i = 0; i < BOARD_SIZE; i++)
 
 		{
 			if (_A[i][j].c == 1) //O
@@ -161,7 +161,7 @@ bool xet_cheo_tren_chinh()
 {
 	int demO = 0, demX = 0;
 	int i = 0, k = 0;
-	for (int j = 1;j < BOARD_SIZE;j++)
+	for (int j = 1; j < BOARD_SIZE; j++)
 	{
 		demO = 0;
 		demX = 0;
@@ -181,7 +181,7 @@ bool xet_cheo_tren_chinh()
 					else
 						demO = 0;
 				}
-				if (_A[i][k].c == 0) 
+				if (_A[i][k].c == 0)
 					if (demO >= 5)
 						demO = 5;
 					else
@@ -275,7 +275,7 @@ bool xet_cheo_duoi_chinh()
 {
 	int demO = 0, demX = 0;
 	int j = 0, k = 0;
-	for (int i = 1;i < BOARD_SIZE;i++)
+	for (int i = 1; i < BOARD_SIZE; i++)
 	{
 		demO = 0;
 		demX = 0;
@@ -329,7 +329,7 @@ bool xet_cheo_tren_phu()
 {
 	int demO = 0, demX = 0;
 	int i = 0, k = 0;
-	for (int j = 1;j < BOARD_SIZE;j++)
+	for (int j = 1; j < BOARD_SIZE; j++)
 	{
 		demO = 0;
 		demX = 0;
@@ -444,11 +444,11 @@ bool xet_chinh()
 bool xet_phu()
 {
 	int demO = 0, demX = 0;
-	for (int i = 0;i < BOARD_SIZE;i++)
+	for (int i = 0; i < BOARD_SIZE; i++)
 	{
 		demX = 0;
 		demO = 0;
-		for (int j = 0;j < BOARD_SIZE;j++)
+		for (int j = 0; j < BOARD_SIZE; j++)
 		{
 			if (i + j == BOARD_SIZE - 1)
 			{
@@ -521,7 +521,7 @@ bool WinTest()
 int TestBoard()
 {
 	if (isfull() == true) return 0; //hòa
-	else 
+	else
 	{
 		if (WinTest() == true)
 			return (_TURN == true ? -1 : 1);
@@ -530,7 +530,7 @@ int TestBoard()
 	}
 }
 
-/*Hàm kiểm tra ô đã được đánh chưa*/
+/*Hàm hổ trợ xem đang lượt của ai khi enter*/
 int CheckBoard(int pX, int pY)
 {
 	for (int i = 0; i < BOARD_SIZE; i++)
@@ -547,4 +547,17 @@ int CheckBoard(int pX, int pY)
 		}
 	}
 	return 0;
+}
+
+/*Hàm kiểm tra ô đã đánh chưa. Trả về -1 là X đã đánh,1 là O đã đánh,0 là chưa đánh*/
+int CheckTick(int pX, int pY)
+{
+	for (int i = 0; i < BOARD_SIZE; i++)
+	{
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].x == pX && _A[i][j].y == pY)
+				return _A[i][j].c;
+		}
+	}
 }

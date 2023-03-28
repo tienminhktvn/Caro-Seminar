@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <stdlib.h>
 #include <conio.h>
 using namespace std;
@@ -18,6 +18,9 @@ int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
 void FixConsoleWindow();
 int ProcessFinish(int pWhoWin);
 int AskContinue();
+void GotoXY(int x, int y);
+void SetColor(int backgound_color, int text_color);
+void HighLight(int x, int y, int w, int h, int color);
 //Hàm Control
 void StartGame();
 void ExitGame();
@@ -26,6 +29,7 @@ void MoveLeft();
 void MoveUp();
 void MoveDown();
 //Hàm Model
+int CheckTick(int pX, int pY);
 int CheckBoard(int pX, int pY);
 int TestBoard();
 
@@ -44,18 +48,172 @@ void main()
 		}
 		else
 		{
-			if (_COMMAND == 'A' || _COMMAND == 75) MoveLeft();
-			else if (_COMMAND == 'W') MoveUp();
-			else if (_COMMAND == 'S') MoveDown();
-			else if (_COMMAND == 'D') MoveRight();
+			if (_COMMAND == 'A')
+			{
+				HighLight(_X - 1, _Y, 3, 1, 15);
+				GotoXY(_X, _Y);
+				if (CheckTick(_X, _Y) == -1)
+				{
+					SetColor(15, 0);
+					cout << "X";
+				}
+				else if (CheckTick(_X, _Y) == 1)
+				{
+					SetColor(15, 0);
+					cout << "O";
+				}
+				GotoXY(_X, _Y);
+				MoveLeft();
+				if (CheckTick(_X, _Y) == 0)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+				}
+				else if (CheckTick(_X, _Y) == -1)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "X";
+					GotoXY(_X, _Y);
+				}
+				else
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "O";
+					GotoXY(_X, _Y);
+				}
+			}
+			else if (_COMMAND == 'W')
+			{
+				HighLight(_X - 1, _Y, 3, 1, 15);
+				GotoXY(_X, _Y);
+				if (CheckTick(_X, _Y) == -1)
+				{
+					SetColor(15, 0);
+					cout << "X";
+				}
+				else if (CheckTick(_X, _Y) == 1)
+				{
+					SetColor(15, 0);
+					cout << "O";
+				}
+				GotoXY(_X, _Y);
+				MoveUp();
+				if (CheckTick(_X, _Y) == 0)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+				}
+				else if (CheckTick(_X, _Y) == -1)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "X";
+					GotoXY(_X, _Y);
+				}
+				else
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "O";
+					GotoXY(_X, _Y);
+				}
+			}
+			else if (_COMMAND == 'S')
+			{
+				HighLight(_X - 1, _Y, 3, 1, 15);
+				GotoXY(_X, _Y);
+				if (CheckTick(_X, _Y) == -1)
+				{
+					SetColor(15, 0);
+					cout << "X";
+				}
+				else if (CheckTick(_X, _Y) == 1)
+				{
+					SetColor(15, 0);
+					cout << "O";
+				}
+				GotoXY(_X, _Y);
+				MoveDown();
+				if (CheckTick(_X, _Y) == 0)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+				}
+				else if (CheckTick(_X, _Y) == -1)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "X";
+					GotoXY(_X, _Y);
+				}
+				else
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "O";
+					GotoXY(_X, _Y);
+				}
+			}
+			else if (_COMMAND == 'D')
+			{
+				HighLight(_X - 1, _Y, 3, 1, 15);
+				GotoXY(_X, _Y);
+				if (CheckTick(_X, _Y) == -1)
+				{
+					SetColor(15, 0);
+					cout << "X";
+				}
+				else if (CheckTick(_X, _Y) == 1)
+				{
+					SetColor(15, 0);
+					cout << "O";
+				}
+				GotoXY(_X, _Y);
+				MoveRight();
+				if (CheckTick(_X, _Y) == 0)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+				}
+				else if (CheckTick(_X, _Y) == -1)
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "X";
+					GotoXY(_X, _Y);
+				}
+				else
+				{
+					HighLight(_X - 1, _Y, 3, 1, 14);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
+					cout << "O";
+					GotoXY(_X, _Y);
+				}
+			}
 			else if (_COMMAND == 13) //Nhấn Enter
 			{
 				switch(CheckBoard(_X, _Y))
 				{
 				case -1:
+					HighLight(_X - 1, _Y, 3, 1, 15);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
 					cout << "X";
 					break;
 				case 1:
+					HighLight(_X - 1, _Y, 3, 1, 15);
+					GotoXY(_X, _Y);
+					SetColor(14, 0);
 					cout << "O";
 					break;
 				case 0:

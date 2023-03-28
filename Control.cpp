@@ -1,4 +1,4 @@
-﻿#include <stdlib.h>
+#include <stdlib.h>
 
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
 #define LEFT 3 //Tọa độ trái màn hình bàn cờ
@@ -14,14 +14,17 @@ void ResetData();
 void DrawBoard(int pSize);
 void GabageCollect();
 void GotoXY(int x, int y);
+void ChangeBackgrColor();
+void DrawMenu(int x,int y,int w,int h);
 
 
 /*Hàm dọn dẹp tài nguyên*/
 void StartGame()
 {
-	system("cls");
+	system("cls"); //xóa màn hình
 	ResetData();
-	DrawBoard(BOARD_SIZE);
+	ChangeBackgrColor(); //đổi màu nền
+	DrawBoard(BOARD_SIZE); //vẽ bảng caro
 }
 
 /*Hàm thoát game*/
