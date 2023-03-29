@@ -1,6 +1,9 @@
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
 #define LEFT 3 //Tọa độ trái màn hình bàn cờ
 #define TOP 1 //Tọa độ trên màn hình bàn cờ
+#define OPTION_HIGH 4
+#define OPTION_WIDTH  10
+
 
 //Khai báo kiểu dữ liệu
 extern struct _POINT { int x, y, c; }; //x: tọa độ dòng, y: tọa độ cột, c: đánh dấu
@@ -549,7 +552,7 @@ int CheckBoard(int pX, int pY)
 	return 0;
 }
 
-/*Hàm kiểm tra ô đã đánh chưa. Trả về -1 là X đã đánh,1 là O đã đánh,0 là chưa đánh*/
+/*Hàm kiểm tra ô đã đánh chưa*/
 int CheckTick(int pX, int pY)
 {
 	for (int i = 0; i < BOARD_SIZE; i++)

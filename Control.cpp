@@ -3,12 +3,16 @@
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
 #define LEFT 3 //Tọa độ trái màn hình bàn cờ
 #define TOP 1 //Tọa độ trên màn hình bàn cờ
+#define OPTION_HIGH 4
+#define OPTION_WIDTH  10
+
 
 extern struct _POINT { int x, y, c; }; //x: tọa độ dòng, y: tọa độ cột, c: đánh dấu
 extern _POINT _A[BOARD_SIZE][BOARD_SIZE]; //Ma trận bàn cờ
 extern bool _TURN; //true là lượt người thứ nhất và false là lượt người thứ hai
 extern int _COMMAND; //Biến nhận giá trị phím người dùng nhập
 extern int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
+extern int _OPTION;
 
 void ResetData();
 void DrawBoard(int pSize);
@@ -21,10 +25,9 @@ void DrawMenu(int x,int y,int w,int h);
 /*Hàm dọn dẹp tài nguyên*/
 void StartGame()
 {
-	system("cls"); //xóa màn hình
+	system("cls");
 	ResetData();
-	ChangeBackgrColor(); //đổi màu nền
-	DrawBoard(BOARD_SIZE); //vẽ bảng caro
+	DrawBoard(BOARD_SIZE);
 }
 
 /*Hàm thoát game*/
@@ -71,5 +74,27 @@ void MoveUp()
 	{
 		_Y -= 2;
 		GotoXY(_X, _Y);
+	}
+}
+
+/*Hàm di chuyển lên trong menu*/
+void MenuUp()
+{
+	if (_OPTION != 1)
+	{
+		_Y -= (OPTION_HIGH + 1);
+		GotoXY(_X, _Y);
+		_OPTION--;
+	}
+}
+
+/*Hàm di chuyển xuống trong menu*/
+void MenuDown()
+{
+	if (_OPTION != 3)
+	{
+		_Y += (OPTION_HIGH + 1);
+		GotoXY(_X, _Y);
+		_OPTION++;
 	}
 }
