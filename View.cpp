@@ -6,12 +6,16 @@ using namespace std;
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
 #define LEFT 3 //Tọa độ trái màn hình bàn cờ
 #define TOP 1 //Tọa độ trên màn hình bàn cờ
+#define OPTION_HIGH 4
+#define OPTION_WIDTH  10
+
 
 extern struct _POINT { int x, y, c; }; //x: tọa độ dòng, y: tọa độ cột, c: đánh dấu
 extern _POINT _A[BOARD_SIZE][BOARD_SIZE]; //Ma trận bàn cờ
 extern bool _TURN; //true là lượt người thứ nhất và false là lượt người thứ hai
 extern int _COMMAND; //Biến nhận giá trị phím người dùng nhập
 extern int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
+extern int _OPTION;
 
 /*Hàm cố định màn hình*/
 void FixConsoleWindow()
@@ -111,7 +115,6 @@ void DrawBox(int x,int y, int w, int h)
 	}
 }
 
-/*Hàm thêm chữ vào chính giữa box*/
 void TextBox(int x,int y,int w,int h,string s)
 {
 	int length = s.size();
@@ -119,7 +122,6 @@ void TextBox(int x,int y,int w,int h,string s)
 	cout << s;
 }
 
-/*Tạo một khối Highlight có chiều cao h(hướng xuống từ y), chiều rộng w(hướng sang phải từ x)*/
 void HighLight(int x, int y,int w,int h,int color)
 {
 	SetColor(color, color);
@@ -131,25 +133,22 @@ void HighLight(int x, int y,int w,int h,int color)
 		}
 }
 
-void DrawStartBox(int x,int y,int w,int h,int b_color,int t_color)
-{
-	HighLight(x, y, w, h, b_color);
-	SetColor(b_color, t_color);
-	DrawBox(x, y, w, h);
-	TextBox(x, y, w, h, "START");
-}
-
-void DrawRuleBox(int x, int y, int w, int h,int b_color,int t_color)
+void DrawOption(int x,int y,int w,int h,int b_color,int t_color,string s)
 {
 	SetColor(b_color, t_color);
 	DrawBox(x, y, w, h);
-	TextBox(x, y, w, h, "RULE");
+	TextBox(x, y, w, h, s);
 }
 
 void DrawMenu(int x,int y,int w,int h)
 {
-	DrawStartBox(x, y, w, h,14,0);
-	DrawRuleBox(x, y+1+h, w, h,15,0);
+	system("cls");
+	HighLight(x, y, w, h, 14);
+	DrawOption(x, y, w, h, 14, 0, "START");
+	DrawOption(x, y + (1 + h), w, h, 15, 0, "RULE");
+	DrawOption(x, y + 2 * (1 + h), w, h, 15, 0, "SAVE GAME");
+	_X = x; _Y = y;
+	GotoXY(_X, _Y);
 }
 
 void DrawBoard(int pSize)
