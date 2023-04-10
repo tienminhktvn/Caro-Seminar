@@ -1,9 +1,11 @@
+#include <cstdlib>
+#include <ctime>
+
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
 #define LEFT 3 //Tọa độ trái màn hình bàn cờ
 #define TOP 1 //Tọa độ trên màn hình bàn cờ
 #define OPTION_HIGH 4
 #define OPTION_WIDTH  10
-
 
 //Khai báo kiểu dữ liệu
 extern struct _POINT { int x, y, c; }; //x: tọa độ dòng, y: tọa độ cột, c: đánh dấu
@@ -160,61 +162,6 @@ bool xet_cot()
 	}
 }
 
-bool xet_cheo_tren_chinh()
-{
-	int demO = 0, demX = 0;
-	int i = 0, k = 0;
-	for (int j = 1; j < BOARD_SIZE; j++)
-	{
-		demO = 0;
-		demX = 0;
-
-		k = j;
-		i = 0;
-		while (k < BOARD_SIZE)
-		{
-			if (_A[i][k].c == 1) //O
-				demO++;
-			else
-			{
-				if (_A[i][k].c == -1) //X
-				{
-					if (demO >= 5 && _A[i - demO + 1][k - demO + 1].c != -1) //X
-						demO = 5;
-					else
-						demO = 0;
-				}
-				if (_A[i][k].c == 0)
-					if (demO >= 5)
-						demO = 5;
-					else
-						demO = 0;
-			}
-			if (_A[i][k].c == -1) //X
-				demX++;
-			else
-			{
-				if (_A[i][k].c == 1) //O
-				{
-					if (demX >= 5 && _A[i - demX + 1][k - demX + 1].c != 1) //O
-						demX = 5;
-					else
-						demX = 0;
-				}
-				if (_A[i][k].c == 0)
-					if (demX >= 5)
-						demX = 5;
-					else
-						demX = 0;
-			}
-			k++;
-			i++;
-		}
-
-		if (demO >= 5 || demX >= 5)
-			return true;
-	}
-}
 
 bool xet_cheo_duoi_phu()
 {
@@ -274,59 +221,6 @@ bool xet_cheo_duoi_phu()
 	return false;
 }
 
-bool xet_cheo_duoi_chinh()
-{
-	int demO = 0, demX = 0;
-	int j = 0, k = 0;
-	for (int i = 1; i < BOARD_SIZE; i++)
-	{
-		demO = 0;
-		demX = 0;
-
-		k = i;
-		j = 0;
-		while (k < BOARD_SIZE)
-		{
-			if (_A[k][j].c == 1) //O
-				demO++;
-			else
-			{
-				if (_A[k][j].c == -1) //X
-				{
-					if (demO >= 5 && _A[k - demO + 1][j - demO + 1].c != -1) //X
-						demO = 5;
-					else
-						demO = 0;
-				}
-				if (_A[k][j].c == 0)
-					if (demO >= 5)
-						demO = 5;
-					else
-						demO = 0;
-			}
-			if (_A[k][j].c == -1) //X
-				demX++;
-			else
-			{
-				if (_A[k][j].c == 1) //O
-					if (demX >= 5 && _A[k - demX + 1][j - demX + 1].c != 1) //O
-						demX = 5;
-					else
-						demX = 0;
-				if (_A[k][j].c == 0)
-					if (demX >= 5)
-						demX = 5;
-					else
-						demX = 0;
-			}
-			k++;
-			j++;
-		}
-
-		if (demO >= 5 || demX >= 5)
-			return true;
-	}
-}
 
 bool xet_cheo_tren_phu()
 {
@@ -466,11 +360,13 @@ bool xet_phu()
 						else
 							demO = 0;
 					}
-					if (_A[i][j].c == 0)
+					if (_A[i][j].c == 0) 
+					{
 						if (demO >= 5)
 							demO = 5;
 						else
 							demO = 0;
+					}
 				}
 				if (_A[i][j].c == -1) //X
 					demX++;
@@ -495,7 +391,63 @@ bool xet_phu()
 		if (demO >= 5 || demX >= 5)
 			return true;
 	}
+}
 
+bool xet_cheo_phu_ben_trai_cung()
+{
+	int demO = 0, demX = 0;
+	int i = 0, k = 0;
+	for (int j = 0; j < BOARD_SIZE; j++)
+	{
+		demO = 0;
+		demX = 0;
+
+		k = j;
+		i = 0;
+		while (k >= 0 && i < BOARD_SIZE)
+		{
+			if (_A[i][k].c == 1) //O
+				demO++;
+			else
+			{
+				if (_A[i][k].c == -1) //X
+				{
+					if (demO >= 5 && (i - demO < 0 || k + demO >= BOARD_SIZE || _A[i - demO][k + demO].c != -1)) //X
+						demO = 5;
+					else
+						demO = 0;
+				}
+				if (_A[i][k].c == 0)
+					if (demO >= 5)
+						demO = 5;
+					else
+						demO = 0;
+			}
+			if (_A[i][k].c == -1) //X
+				demX++;
+			else
+			{
+				if (_A[i][k].c == 1) //O
+				{
+					if (demX >= 5 && (i - demX < 0 || k + demX >= BOARD_SIZE || _A[i - demX][k + demX].c != 1))
+						demX = 5;
+					else
+						demX = 0;
+				}
+				if (_A[i][k].c == 0)
+					if (demX >= 5)
+						demX = 5;
+					else
+						demX = 0;
+			}
+			k--;
+			i++;
+		}
+
+		if (demO >= 5 || demX >= 5)
+			return true;
+	}
+	return false;
 }
 
 //Hàm kiểm tra thắng
@@ -505,17 +457,15 @@ bool WinTest()
 		return true;
 	if (xet_cot() == true)
 		return true;
-	if (xet_cheo_tren_chinh() == true)
-		return true;
 	if (xet_cheo_duoi_phu() == true)
-		return true;
-	if (xet_cheo_tren_chinh() == true)
 		return true;
 	if (xet_cheo_tren_phu() == true)
 		return true;
 	if (xet_chinh() == true)
 		return true;
 	if (xet_phu() == true)
+		return true;
+	if (xet_cheo_phu_ben_trai_cung() == true)
 		return true;
 	return false;
 }
@@ -564,3 +514,27 @@ int CheckTick(int pX, int pY)
 		}
 	}
 }
+
+//Hàm tạo bot chơi với người chơi, lượt của bot là người thứ 2 hay _TURN = false
+int Bot(int& pX, int& pY)
+{
+	srand(time(NULL));
+
+	pX = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
+	pY = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
+
+	if (_A[pX][pY].c != 0) {
+		while (true) {
+			pX = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
+			pY = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
+
+			if (_A[pX][pY].c == 0)
+				break;
+		}
+	}
+
+	_A[pX][pY].c = 1;
+
+	return 1;
+}
+
