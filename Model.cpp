@@ -1,11 +1,16 @@
-#include <cstdlib>
-#include <ctime>
+#include <string>
+#include <iostream>
+#include <stdio.h>
+#include <conio.h>
+#include <time.h>
+using namespace std;
 
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
 #define LEFT 3 //Tọa độ trái màn hình bàn cờ
 #define TOP 1 //Tọa độ trên màn hình bàn cờ
-#define OPTION_HIGH 4
-#define OPTION_WIDTH  10
+#define OPTION_HIGH 2
+#define OPTION_WIDTH  20
+
 
 //Khai báo kiểu dữ liệu
 extern struct _POINT { int x, y, c; }; //x: tọa độ dòng, y: tọa độ cột, c: đánh dấu
@@ -13,9 +18,37 @@ extern _POINT _A[BOARD_SIZE][BOARD_SIZE]; //Ma trận bàn cờ
 extern bool _TURN; //true là lượt người thứ nhất và false là lượt người thứ hai
 extern int _COMMAND; //Biến nhận giá trị phím người dùng nhập
 extern int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
+extern struct MENU
+{
+	string opt1;
+	string opt2;
+	string opt3;
+	string opt4;
+};
+extern MENU menu;
+extern int _OPTION;
+extern int Score1;
+extern int Score2;
+extern string Player1_name;
+extern string Player2_name;
+
+//nhom ham view
+void GotoXY(int x, int y);
+void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
+void HighLight(int x, int y, int w, int h, int color);
+void SetColor(int backgound_color, int text_color);
+void Draw_newgame_opt(int x, int y, int w, int h);
+void DrawMenu(int x, int y, int w, int h, MENU m);
+void Inputname(int x, int y);
+//
+void MenuUp(int& o);
+void MenuDown(int& o,int n);
+//
+void StartGame();
+
 
 /*Hàm khởi tạo dữ liệu mặc định ban đầu cho ma trận bàn cờ*/
-void ResetData()
+void ResetGame()
 {
 	for (int i = 0; i < BOARD_SIZE; i++)
 	{
@@ -30,11 +63,20 @@ void ResetData()
 	_X = _A[0][0].x; _Y = _A[0][0].y; //Thiết lập lại tọa đồ hiện hành ban đầu
 }
 
+/*Hàm khởi tạo lại dữ liệu cho một game mới khi new game*/
+void ResetData()
+{
+	ResetGame();
+	Score1 = 0;
+	Score2 = 0;
+}
+
 /*Hàm dọn dẹp tài nguyên*/
 void GabageCollect()
 {
 	//Dọn dẹp tài nguyên nếu khai báo con trỏ
 }
+
 
 //Kiểm tra đã đủ 80% quân cờ trên bàn cờ chưa
 bool isfull()
@@ -162,7 +204,6 @@ bool xet_cot()
 	}
 }
 
-
 bool xet_cheo_duoi_phu()
 {
 	int demO = 0, demX = 0;
@@ -220,7 +261,6 @@ bool xet_cheo_duoi_phu()
 	}
 	return false;
 }
-
 
 bool xet_cheo_tren_phu()
 {
@@ -360,7 +400,7 @@ bool xet_phu()
 						else
 							demO = 0;
 					}
-					if (_A[i][j].c == 0) 
+					if (_A[i][j].c == 0)
 					{
 						if (demO >= 5)
 							demO = 5;
@@ -470,6 +510,7 @@ bool WinTest()
 	return false;
 }
 
+
 /*Hàm kiểm ta xem có người thắng/thua/hòa*/
 int TestBoard()
 {
@@ -538,3 +579,135 @@ int Bot(int& pX, int& pY)
 	return 1;
 }
 
+
+void Newgame_opt()
+{
+	int x = 50;
+	int y = 16;
+	MENU m = { "PvP","PVC" };
+	int opt = 1;
+	Draw_newgame_opt(x, y, OPTION_WIDTH, OPTION_HIGH);
+	while (opt != 0)
+	{
+		_COMMAND = toupper(_getch());
+		if (_COMMAND == 13)
+		{
+			switch (opt)
+			{
+			case 1:
+				Inputname(x, y);
+				StartGame();
+				return;
+			case2:
+				getline(cin, Player1_name);
+				Player2_name = "Computer";
+				StartGame();
+				return;
+			}
+		}
+		else if (_COMMAND == 'W')
+		{
+			if (opt == 1)
+				continue;
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, m.opt2);
+			MenuUp(opt);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, m.opt1);
+			GotoXY(_X, _Y);
+		}
+		else if (_COMMAND == 'S')
+		{
+			if (opt == 2)
+				continue;
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, m.opt1);
+			MenuDown(opt,2);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, m.opt2);
+			GotoXY(_X, _Y);
+		}
+	}
+}
+
+void Menu()
+{
+	int x = 50, y = 16;
+	DrawMenu(x, y, OPTION_WIDTH, OPTION_HIGH, menu);
+	_OPTION = 1;
+	while (_OPTION != 0)
+	{
+		_COMMAND = toupper(_getch());
+		if (_COMMAND == 13)
+		{
+			switch (_OPTION)
+			{
+			case 1:
+				Newgame_opt();
+				return;
+			}
+		}
+		else if (_COMMAND == 'W')
+		{
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			switch (_OPTION)
+			{
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt3);
+				break;
+			case 4:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt4);
+				break;
+			}
+			MenuUp(_OPTION);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			switch (_OPTION)
+			{
+			case 1:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt1);
+				break;
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt3);
+				break;
+			}
+			GotoXY(_X, _Y);
+		}
+		else if (_COMMAND == 'S')
+		{
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			switch (_OPTION)
+			{
+			case 1:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt1);
+				break;
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt3);
+				break;
+			}
+			MenuDown(_OPTION,4);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			switch (_OPTION)
+			{
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt3);
+				break;
+			case 4:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt4);
+				break;
+			}
+			GotoXY(_X, _Y);
+		}
+	}
+}
