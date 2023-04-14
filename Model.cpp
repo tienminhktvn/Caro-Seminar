@@ -39,11 +39,10 @@ void HighLight(int x, int y, int w, int h, int color);
 void SetColor(int backgound_color, int text_color);
 void Draw_newgame_opt(int x, int y, int w, int h);
 void DrawMenu(int x, int y, int w, int h, MENU m);
-void Inputname(int x, int y);
-//
+void printLogo();
+//nhom ham control
 void MenuUp(int& o);
 void MenuDown(int& o,int n);
-//
 void StartGame();
 
 
@@ -69,12 +68,6 @@ void ResetData()
 	ResetGame();
 	Score1 = 0;
 	Score2 = 0;
-}
-
-/*Hàm dọn dẹp tài nguyên*/
-void GabageCollect()
-{
-	//Dọn dẹp tài nguyên nếu khai báo con trỏ
 }
 
 
@@ -579,6 +572,47 @@ int Bot(int& pX, int& pY)
 	return 1;
 }
 
+void InputPvP(int x, int y)
+{
+	SetColor(15, 0);
+	system("cls");
+	GotoXY(x, y);
+	cout << "Nhap ten Player 1: ";
+	char c;
+	while (1)
+	{
+		c = toupper(_getch());
+		if (c == 13) break;
+		cout << c;
+		Player1_name += c;
+	}
+	GotoXY(x, y + 2);
+	cout << "Nhap ten Player 2: ";
+	while (1)
+	{
+		c = toupper(_getch());
+		if (c == 13) break;
+		cout << c;
+		Player2_name += c;
+	}
+}
+
+void InputPvC(int x, int y)
+{
+	Player2_name = "COMPUTER";
+	SetColor(15, 0);
+	system("cls");
+	GotoXY(x, y);
+	cout << "Nhap ten Player 1: ";
+	char c;
+	while (1)
+	{
+		c = toupper(_getch());
+		if (c == 13) break;
+		cout << c;
+		Player1_name += c;
+	}
+}
 
 void Newgame_opt()
 {
@@ -595,12 +629,11 @@ void Newgame_opt()
 			switch (opt)
 			{
 			case 1:
-				Inputname(x, y);
+				InputPvP(x - 10, y);
 				StartGame();
 				return;
-			case2:
-				getline(cin, Player1_name);
-				Player2_name = "Computer";
+			case 2:
+				InputPvC(x - 10, y);
 				StartGame();
 				return;
 			}
@@ -645,6 +678,10 @@ void Menu()
 			case 1:
 				Newgame_opt();
 				return;
+			case 4:
+				system("cls");
+				system("color F0");
+				exit(0);
 			}
 		}
 		else if (_COMMAND == 'W')

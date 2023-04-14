@@ -48,11 +48,6 @@ void GotoXY(int x, int y)
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void ChangeBackgrColor()
-{
-	system("color F0");
-}
-
 /*0 = Black      8 = Gray
 1 = Blue       9 = Light Blue
 2 = Green      10 = Light Green
@@ -132,9 +127,40 @@ void DrawOption(int x,int y,int w,int h,int b_color,int t_color,string s)
 	TextBox(x, y, w, h, s);
 }
 
+void printLogo(int x)
+{
+	SetColor(15, x);
+	unsigned char logo[] = {
+		32,219,219,219,219,219,219,187,32,219,219,219,219,219,219,187,32,32,32,32,32,32,32,219,219,219,219,219,219,187,32,219,219,219,219,219,187,32,219,219,219,219,219,219,187,32,32,219,219,219,219,219,219,187,32,
+219,219,201,205,205,205,205,188,219,219,201,205,205,205,219,219,187,32,32,32,32,32,219,219,201,205,205,205,205,188,219,219,201,205,205,219,219,187,219,219,201,205,205,219,219,187,219,219,201,205,205,205,219,219,187,
+219,219,186,32,32,32,32,32,219,219,186,32,32,32,219,219,186,32,32,32,32,32,219,219,186,32,32,32,32,32,219,219,219,219,219,219,219,186,219,219,219,219,219,219,201,188,219,219,186,32,32,32,219,219,186,
+219,219,186,32,32,32,32,32,219,219,186,32,32,32,219,219,186,32,32,32,32,32,219,219,186,32,32,32,32,32,219,219,201,205,205,219,219,186,219,219,201,205,205,219,219,187,219,219,186,32,32,32,219,219,186,
+200,219,219,219,219,219,219,187,200,219,219,219,219,219,219,201,188,32,32,32,32,32,200,219,219,219,219,219,219,187,219,219,186,32,32,219,219,186,219,219,186,32,32,219,219,186,200,219,219,219,219,219,219,201,188,
+32,200,205,205,205,205,205,188,32,200,205,205,205,205,205,188,32,32,32,32,32,32,32,200,205,205,205,205,205,188,200,205,188,32,32,200,205,188,200,205,188,32,32,200,205,188,32,200,205,205,205,205,205,188,32 };
+	int top = 4, left = 35;
+	int num_lines = 6, num_chars = 55;
+	for (int i = 0; i < num_lines; i++)
+	{
+		GotoXY(left, i + top);
+		for (int j = 0; j < num_chars; j++)
+			putchar(logo[i * num_chars + j]);
+	}
+}
+
 void DrawMenu(int x,int y,int w,int h,MENU m)
 {
 	system("cls");
+	/*printLogo(10);
+	Sleep(1000);
+	printLogo(11);
+	Sleep(1000);
+	printLogo(12);
+	Sleep(1000);
+	printLogo(13);
+	Sleep(1000);
+	printLogo(14);
+	Sleep(1000);*/
+	printLogo(0);
 	HighLight(x, y, w, h, 14);
 	DrawOption(x, y, w, h, 14, 0, m.opt1);
 	DrawOption(x, y + (1 + h), w, h, 15, 0, m.opt2);
@@ -152,18 +178,6 @@ void Draw_newgame_opt(int x, int y, int w, int h)
 	HighLight(x, y, w, h, 14);
 	DrawOption(x, y, w, h, 14, 0, m.opt1);
 	DrawOption(x, y + (1 + h), w, h, 15, 0, m.opt2);
-}
-
-void Inputname(int x,int y)
-{
-	SetColor(15, 0);
-	system("cls");
-	GotoXY(x, y);
-	cout << "Nhap ten Player 1: ";
-	getline(cin, Player1_name);
-	GotoXY(x, y + 2);
-	cout << "Nhap ten Player 2: ";
-	getline(cin, Player2_name);
 }
 
 void DrawBoard(int pSize)
