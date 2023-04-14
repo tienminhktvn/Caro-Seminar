@@ -1,5 +1,7 @@
 	#include <stdlib.h>
 	#include <string>
+#include <conio.h>
+#include <iostream>
 	using namespace std;
 
 	#define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
@@ -30,34 +32,57 @@
 	extern string Player2_name;
 
 	void ResetGame();
-	void DrawBoard(int pSize);
-	void GabageCollect();
+
+	//Hàm View
+	void FixConsoleWindow();
+	int ProcessFinish(int pWhoWin);
+	void AskContinue();
 	void GotoXY(int x, int y);
-	void ChangeBackgrColor();
-	void DrawMenu(int x,int y,int w,int h);
+	void SetColor(int backgound_color, int text_color);
+	void HighLight(int x, int y, int w, int h, int color);
 	void DrawBox(int x, int y, int w, int h);
+	void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
+	void DrawMenu(int x, int y, int w, int h, MENU m);
+	void Draw_newgame_opt(int x, int y, int w, int h);
+	void ChangeBackgrColor();
+	void Hightlight_Play_turn(int x, int y, int w, int h, int color, int player);
+	void DrawBoard(int pSize);
 	void DrawTurn(int x, int y, int w, int h);
+	//Hàm Control
+	void StartGame();
+	void ExitGame();
+	void MoveRight();
+	void MoveLeft();
+	void MoveUp();
+	void MoveDown();
+	void MenuUp();
+	void MenuDown();
+	//Hàm Model
+	int CheckTick(int pX, int pY);
+	int CheckBoard(int pX, int pY);
+	int TestBoard();
+	void ResetData();
+	void Menu();
 
-
-	/*Hàm dọn dẹp tài nguyên*/
-	void StartGame()
+/*Hàm dọn dẹp tài nguyên*/
+void StartGame()
 	{
 		system("cls");
 		ResetGame();
 		DrawBox(55, 19, 60, 8);
 		DrawTurn(55, _A[0][BOARD_SIZE-1].y, 60, 12);
 		DrawBoard(BOARD_SIZE);
+		DrawOption(_A[0][0].x-2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 10, 2,15,0,"M: MENU");
 	}
 
-	/*Hàm thoát game*/
-	void ExitGame()
+/*Hàm thoát game*/
+void ExitGame()
 	{
 		system("cls");
-		GabageCollect();
 	}
 
-	/*Hàm di chuyển sang phải*/
-	void MoveRight()
+/*Hàm di chuyển sang phải*/
+void MoveRight()
 	{
 		if (_X < _A[BOARD_SIZE - 1][BOARD_SIZE - 1].x)
 		{
@@ -66,8 +91,8 @@
 		}
 	}
 
-	/*Hàm di chuyển sang trái*/
-	void MoveLeft()
+/*Hàm di chuyển sang trái*/
+void MoveLeft()
 	{
 		if (_X > _A[0][0].x)
 		{
@@ -77,7 +102,7 @@
 	}
 
 	/*Hàm di chuyển xuống*/
-	void MoveDown()
+void MoveDown()
 	{
 		if (_Y< _A[BOARD_SIZE-1][BOARD_SIZE-1].y)
 		{
@@ -87,7 +112,7 @@
 	}
 
 	/*Hàm di chuyển lên*/
-	void MoveUp()
+void MoveUp()
 	{
 		if (_Y > _A[0][0].y)
 		{
@@ -97,7 +122,7 @@
 	}
 
 	/*Hàm di chuyển lên trong menu*/
-	void MenuUp(int& o)
+void MenuUp(int& o)
 	{
 		if (o != 1)
 		{
@@ -108,7 +133,7 @@
 	}
 
 	/*Hàm di chuyển xuống trong menu*/
-	void MenuDown(int& o,int n)
+void MenuDown(int& o,int n)
 	{
 		if (o != n)
 		{
@@ -117,3 +142,240 @@
 			o++;
 		}
 	}
+
+void GamePlay()
+	{
+		bool validEnter = true;
+		while (1)
+		{
+			_COMMAND = toupper(_getch());
+			if (_COMMAND == 'M')
+			{
+				return;
+			}
+			else
+			{
+				if (_COMMAND == 'A')
+				{
+					HighLight(_X - 1, _Y, 3, 1, 15);
+					GotoXY(_X, _Y);
+					if (CheckTick(_X, _Y) == -1)
+					{
+						SetColor(15, 0);
+						cout << "X";
+					}
+					else if (CheckTick(_X, _Y) == 1)
+					{
+						SetColor(15, 0);
+						cout << "O";
+					}
+					GotoXY(_X, _Y);
+					MoveLeft();
+					if (CheckTick(_X, _Y) == 0)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+					}
+					else if (CheckTick(_X, _Y) == -1)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "X";
+						GotoXY(_X, _Y);
+					}
+					else
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "O";
+						GotoXY(_X, _Y);
+					}
+				}
+				else if (_COMMAND == 'W')
+				{
+					HighLight(_X - 1, _Y, 3, 1, 15);
+					GotoXY(_X, _Y);
+					if (CheckTick(_X, _Y) == -1)
+					{
+						SetColor(15, 0);
+						cout << "X";
+					}
+					else if (CheckTick(_X, _Y) == 1)
+					{
+						SetColor(15, 0);
+						cout << "O";
+					}
+					GotoXY(_X, _Y);
+					MoveUp();
+					if (CheckTick(_X, _Y) == 0)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+					}
+					else if (CheckTick(_X, _Y) == -1)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "X";
+						GotoXY(_X, _Y);
+					}
+					else
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "O";
+						GotoXY(_X, _Y);
+					}
+				}
+				else if (_COMMAND == 'S')
+				{
+					HighLight(_X - 1, _Y, 3, 1, 15);
+					GotoXY(_X, _Y);
+					if (CheckTick(_X, _Y) == -1)
+					{
+						SetColor(15, 0);
+						cout << "X";
+					}
+					else if (CheckTick(_X, _Y) == 1)
+					{
+						SetColor(15, 0);
+						cout << "O";
+					}
+					GotoXY(_X, _Y);
+					MoveDown();
+					if (CheckTick(_X, _Y) == 0)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+					}
+					else if (CheckTick(_X, _Y) == -1)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "X";
+						GotoXY(_X, _Y);
+					}
+					else
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "O";
+						GotoXY(_X, _Y);
+					}
+				}
+				else if (_COMMAND == 'D')
+				{
+					HighLight(_X - 1, _Y, 3, 1, 15);
+					GotoXY(_X, _Y);
+					if (CheckTick(_X, _Y) == -1)
+					{
+						SetColor(15, 0);
+						cout << "X";
+					}
+					else if (CheckTick(_X, _Y) == 1)
+					{
+						SetColor(15, 0);
+						cout << "O";
+					}
+					GotoXY(_X, _Y);
+					MoveRight();
+					if (CheckTick(_X, _Y) == 0)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+					}
+					else if (CheckTick(_X, _Y) == -1)
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "X";
+						GotoXY(_X, _Y);
+					}
+					else
+					{
+						HighLight(_X - 1, _Y, 3, 1, 14);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "O";
+						GotoXY(_X, _Y);
+					}
+				}
+				else if (_COMMAND == 13) //Nhấn Enter
+				{
+					switch (CheckBoard(_X, _Y))
+					{
+					case -1:
+						HighLight(_X - 1, _Y, 3, 1, 15);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "X";
+						break;
+					case 1:
+						HighLight(_X - 1, _Y, 3, 1, 15);
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "O";
+						break;
+					case 0:
+						validEnter = false; //Khi đánh vào ô đã đánh rồi
+					}
+					//Kiểm tra và xử lý thắng thua
+					if (validEnter == true)
+					{
+						switch (ProcessFinish(TestBoard()))
+						{
+						case 2:
+						{
+							if (_TURN == true)
+							{
+								Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
+								Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
+							}
+							else
+							{
+								Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
+								Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
+							}
+							break;
+						}
+						case -1:
+						case 1:
+						case 0:
+							AskContinue();
+							while (1)
+							{
+								int temp = toupper(_getch());
+								if (temp == 'N')
+								{
+									return;
+								}
+								else if (temp == 'Y')
+								{
+									SetColor(15, 0);
+									StartGame();
+									break;
+								}
+							}
+						}
+					}
+					validEnter = true; //Mở khóa
+				}
+			}
+		}
+    }
+
+void Play()
+{
+	while (1)
+	{
+		Menu();
+		GamePlay();
+	}
+}
