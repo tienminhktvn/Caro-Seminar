@@ -39,11 +39,14 @@ void HighLight(int x, int y, int w, int h, int color);
 void SetColor(int backgound_color, int text_color);
 void Draw_newgame_opt(int x, int y, int w, int h);
 void DrawMenu(int x, int y, int w, int h, MENU m);
+void DrawAbout();
 void printLogo();
 //nhom ham control
 void MenuUp(int& o);
-void MenuDown(int& o,int n);
+void MenuDown(int& o, int n);
 void StartGame();
+void PlayPvP();
+void PlayPvC();
 
 
 /*Hàm khởi tạo dữ liệu mặc định ban đầu cho ma trận bàn cờ*/
@@ -68,6 +71,8 @@ void ResetData()
 	ResetGame();
 	Score1 = 0;
 	Score2 = 0;
+	Player1_name = "";
+	Player2_name = "";
 }
 
 
@@ -503,7 +508,6 @@ bool WinTest()
 	return false;
 }
 
-
 /*Hàm kiểm ta xem có người thắng/thua/hòa*/
 int TestBoard()
 {
@@ -549,27 +553,272 @@ int CheckTick(int pX, int pY)
 	}
 }
 
+//Hàm tìm địa chỉ hàng cột của ô với địa chỉ cho trước
+int searchAddressOfBoard(int pX, int pY, int& row, int& col) {
+	for (int i = 0; i < BOARD_SIZE; i++)
+	{
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].x == pX && _A[i][j].y == pY)
+			{
+				row = i;
+				col = j;
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 //Hàm tạo bot chơi với người chơi, lượt của bot là người thứ 2 hay _TURN = false
-int Bot(int& pX, int& pY)
+int Bot(int _X, int _Y, int& pX, int& pY)
 {
 	srand(time(NULL));
 
-	pX = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
-	pY = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
+	int row, col;
+	searchAddressOfBoard(_X, _Y, row, col);
 
-	if (_A[pX][pY].c != 0) {
-		while (true) {
-			pX = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
-			pY = rand() % ((BOARD_SIZE - 1) - 0 + 1) + 0;
+	//Trường hợp đánh nhiều ô liên tiếp
 
-			if (_A[pX][pY].c == 0)
-				break;
+	//Hàng
+	if (_A[row][col - 2].c == -1 && _A[row][col - 1].c == -1 && _A[row][col].c == -1)
+	{
+		if (col + 1 < BOARD_SIZE)
+		{
+			if (_A[row][col + 1].c == 0)
+			{
+				pX = row;
+				pY = col + 1;
+				_A[row][col + 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row][col + 1].c == -1 && _A[row][col + 2].c == -1 && _A[row][col + 3].c == -1)
+	{
+		if (col - 1 >= 0)
+		{
+			if (_A[row][col - 1].c == 0)
+			{
+				pX = row;
+				pY = col - 1;
+				_A[row][col - 1].c = 1;
+				return 1;
+			}
 		}
 	}
 
-	_A[pX][pY].c = 1;
+	//Cột
+	if (_A[row][col].c == -1 && _A[row - 1][col].c == -1 && _A[row - 2][col].c == -1)
+	{
+		if (row + 1 < BOARD_SIZE)
+		{
+			if (_A[row + 1][col].c == 0)
+			{
+				pX = row + 1;
+				pY = col;
+				_A[row + 1][col].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row + 1][col].c == -1 && _A[row + 2][col].c == -1 && _A[row + 3][col].c == -1)
+	{
+		if (row - 1 >= 0)
+		{
+			if (_A[row - 1][col].c == 0)
+			{
+				pX = row - 1;
+				pY = col;
+				_A[row - 1][col].c = 1;
+				return 1;
+			}
+		}
+	}
 
-	return 1;
+	//Chéo
+
+	//chéo trên phụ
+	if (_A[row][col].c == -1 && _A[row + 1][col - 1].c == -1 && _A[row + 2][col - 2].c == -1)
+	{
+		if (row - 1 >= 0 && col + 1 < BOARD_SIZE)
+		{
+			if (_A[row - 1][col + 1].c == 0)
+			{
+				pX = row - 1;
+				pY = col + 1;
+				_A[row - 1][col + 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row - 1][col + 1].c == -1 && _A[row - 2][col + 2].c == -1 && _A[row - 3][col + 3].c == -1)
+	{
+		if (row + 1 < BOARD_SIZE && col - 1 >= 0)
+		{
+			if (_A[row + 1][col - 1].c == 0)
+			{
+				pX = row + 1;
+				pY = col - 1;
+				_A[row + 1][col - 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	//Chéo trên chính
+	if (_A[row][col].c == -1 && _A[row + 1][col + 1].c == -1 && _A[row + 2][col + 2].c == -1)
+	{
+		if (row - 1 >= 0 && col - 1 >= 0)
+		{
+			if (_A[row - 1][col - 1].c == 0)
+			{
+				pX = row - 1;
+				pY = col - 1;
+				_A[row - 1][col - 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row - 1][col - 1].c == -1 && _A[row - 2][col - 2].c == -1 && _A[row - 3][col - 3].c == -1)
+	{
+		if (row + 1 < BOARD_SIZE && col + 1 < BOARD_SIZE)
+		{
+			if (_A[row + 1][col + 1].c == 0)
+			{
+				pX = row + 1;
+				pY = col + 1;
+				_A[row + 1][col + 1].c = 1;
+				return 1;
+			}
+		}
+	}
+
+	//Trường hợp đánh rời rạc
+	int bestVal = 0;
+	while (bestVal = rand() % 8 + 1)
+	{
+		switch (bestVal)
+		{
+		case 1:
+		{
+			for (int i = col; i < BOARD_SIZE; i++)
+			{
+				if (_A[row][i].c == 0)
+				{
+					pX = row;
+					pY = i;
+					_A[row][i].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 2:
+		{
+			for (int i = col; i >= 0; i--)
+			{
+				if (_A[row][i].c == 0)
+				{
+					pX = row;
+					pY = i;
+					_A[row][i].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 3:
+		{
+			for (int i = row; i < BOARD_SIZE; i++)
+			{
+				if (_A[i][col].c == 0)
+				{
+					pX = i;
+					pY = col;
+					_A[i][col].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 4:
+		{
+			for (int i = row; i >= 0; i--)
+			{
+				if (_A[i][col].c == 0)
+				{
+					pX = i;
+					pY = col;
+					_A[i][col].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 5:
+		{
+			for (int i = row, j = col; i >= 0, j < BOARD_SIZE; i--, j++)
+			{
+				if (row <= 1)
+					break;
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 6:
+		{
+			for (int i = row, j = col; i >= 0, j >= 0; i--, j--)
+			{
+				if (row <= 1)
+					break;
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 7:
+		{
+			for (int i = row, j = col; i < BOARD_SIZE, j < BOARD_SIZE; i++, j++)
+			{
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 8:
+		{
+			for (int i = row, j = col; i < BOARD_SIZE, j >= 0; i++, j--)
+			{
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		}
+	}
+
+	return 0;
 }
 
 void InputPvP(int x, int y)
@@ -631,12 +880,18 @@ void Newgame_opt()
 			case 1:
 				InputPvP(x - 10, y);
 				StartGame();
+				PlayPvP();
 				return;
 			case 2:
 				InputPvC(x - 10, y);
 				StartGame();
+				PlayPvC();
 				return;
 			}
+		}
+		else if (_COMMAND == 'B')
+		{
+			return;
 		}
 		else if (_COMMAND == 'W')
 		{
@@ -655,7 +910,7 @@ void Newgame_opt()
 				continue;
 			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
 			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, m.opt1);
-			MenuDown(opt,2);
+			MenuDown(opt, 2);
 			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
 			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, m.opt2);
 			GotoXY(_X, _Y);
@@ -663,8 +918,9 @@ void Newgame_opt()
 	}
 }
 
-void Menu()
+void Play()
 {
+	system("color F0");
 	int x = 50, y = 16;
 	DrawMenu(x, y, OPTION_WIDTH, OPTION_HIGH, menu);
 	_OPTION = 1;
@@ -677,6 +933,9 @@ void Menu()
 			{
 			case 1:
 				Newgame_opt();
+				return;
+			case 3:
+				DrawAbout();
 				return;
 			case 4:
 				system("cls");
@@ -730,7 +989,7 @@ void Menu()
 				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt3);
 				break;
 			}
-			MenuDown(_OPTION,4);
+			MenuDown(_OPTION, 4);
 			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
 			switch (_OPTION)
 			{
