@@ -39,11 +39,14 @@ void HighLight(int x, int y, int w, int h, int color);
 void SetColor(int backgound_color, int text_color);
 void Draw_newgame_opt(int x, int y, int w, int h);
 void DrawMenu(int x, int y, int w, int h, MENU m);
+void DrawAbout();
 void printLogo();
 //nhom ham control
 void MenuUp(int& o);
 void MenuDown(int& o, int n);
 void StartGame();
+void PlayPvP();
+void PlayPvC();
 
 
 /*Hàm khởi tạo dữ liệu mặc định ban đầu cho ma trận bàn cờ*/
@@ -68,6 +71,8 @@ void ResetData()
 	ResetGame();
 	Score1 = 0;
 	Score2 = 0;
+	Player1_name = "";
+	Player2_name = "";
 }
 
 
@@ -503,7 +508,6 @@ bool WinTest()
 	return false;
 }
 
-
 /*Hàm kiểm ta xem có người thắng/thua/hòa*/
 int TestBoard()
 {
@@ -877,12 +881,18 @@ void Newgame_opt()
 			case 1:
 				InputPvP(x - 10, y);
 				StartGame();
+				PlayPvP();
 				return;
 			case 2:
 				InputPvC(x - 10, y);
 				StartGame();
+				PlayPvC();
 				return;
 			}
+		}
+		else if (_COMMAND == 'B')
+		{
+			return;
 		}
 		else if (_COMMAND == 'W')
 		{
@@ -909,8 +919,9 @@ void Newgame_opt()
 	}
 }
 
-void Menu()
+void Play()
 {
+	system("color F0");
 	int x = 50, y = 16;
 	DrawMenu(x, y, OPTION_WIDTH, OPTION_HIGH, menu);
 	_OPTION = 1;
@@ -923,6 +934,9 @@ void Menu()
 			{
 			case 1:
 				Newgame_opt();
+				return;
+			case 3:
+				DrawAbout();
 				return;
 			case 4:
 				system("cls");

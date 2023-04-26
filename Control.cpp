@@ -35,7 +35,6 @@ extern string Player2_name;
 void ResetGame();
 
 //Hàm View
-void FixConsoleWindow();
 int ProcessFinish(int pWhoWin);
 void AskContinue();
 void GotoXY(int x, int y);
@@ -45,12 +44,10 @@ void DrawBox(int x, int y, int w, int h);
 void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
 void DrawMenu(int x, int y, int w, int h, MENU m);
 void Draw_newgame_opt(int x, int y, int w, int h);
-void ChangeBackgrColor();
 void Hightlight_Play_turn(int x, int y, int w, int h, int color, int player);
 void DrawBoard(int pSize);
 void DrawTurn(int x, int y, int w, int h);
 //Hàm Control
-void StartGame();
 void ExitGame();
 void MoveRight();
 void MoveLeft();
@@ -63,8 +60,8 @@ int CheckTick(int pX, int pY);
 int CheckBoard(int pX, int pY);
 int TestBoard();
 void ResetData();
-void Menu();
 int Bot(int _X, int _Y, int& pX, int& pY);
+
 /*Hàm dọn dẹp tài nguyên*/
 void StartGame()
 {
@@ -73,7 +70,8 @@ void StartGame()
 	DrawBox(55, 19, 60, 8);
 	DrawTurn(55, _A[0][BOARD_SIZE - 1].y, 60, 12);
 	DrawBoard(BOARD_SIZE);
-	DrawOption(_A[0][0].x - 2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 10, 2, 15, 0, "M: MENU");
+	DrawOption(_A[0][0].x - 2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 10, 2, 15, 0, "M:MENU");
+	DrawOption(_A[0][BOARD_SIZE - 1].x-12, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 14, 2, 15, 0, "L:SAVE GAME");
 }
 
 /*Hàm thoát game*/
@@ -145,7 +143,7 @@ void MenuDown(int& o, int n)
 }
 
 //GamePlay của PvP
-void GamePlay()
+void PlayPvP()
 {
 	bool validEnter = true;
 	while (1)
@@ -153,6 +151,7 @@ void GamePlay()
 		_COMMAND = toupper(_getch());
 		if (_COMMAND == 'M')
 		{
+			ResetData();
 			return;
 		}
 		else
@@ -373,32 +372,28 @@ void GamePlay()
 	}
 }
 
-void Play()
-{
-	while (1)
-	{
-		Menu();
-		GamePlay();
-	}
-}
-
 //GamePlay của PvC
-void GamePlayPvC()
+void PlayPvC()
 {
 	int count = -1;
 	bool validEnter = true;
 	while (1)
 	{
 		_COMMAND = toupper(_getch());
-		if (_COMMAND == 27)
+		if (_COMMAND == 'M')
 		{
-			SetColor(15, 0);
-			ExitGame();
+			ResetData();
 			return;
 		}
 		else
 		{
-			if (_COMMAND == 'A')
+			if (_COMMAND == 27)
+			{
+				SetColor(15, 0);
+				ExitGame();
+				return;
+			}
+			else if (_COMMAND == 'A')
 			{
 				HighLight(_X - 1, _Y, 3, 1, 15);
 				GotoXY(_X, _Y);
@@ -610,9 +605,19 @@ void GamePlayPvC()
 						Sleep(600);
 						Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
 						Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
+						GotoXY(_X, _Y);
+						SetColor(15, 0);
+						cout << "X";
+						GotoXY(_A[pX][pY].x, _A[pX][pY].y);
+						SetColor(14, 0);
+						cout << "O";
+						Sleep(600);
 						GotoXY(_A[pX][pY].x, _A[pX][pY].y);
 						SetColor(15, 0);
 						cout << "O";
+						GotoXY(_X, _Y);
+						SetColor(14, 0);
+						cout << "X";
 						_TURN = !_TURN;
 					} 
 					else
@@ -623,14 +628,5 @@ void GamePlayPvC()
 				validEnter = true; //Mở khóa
 			}
 		}
-	}
-}
-
-void PlayPvC()
-{
-	while (1)
-	{
-		Menu();
-		GamePlayPvC();
 	}
 }

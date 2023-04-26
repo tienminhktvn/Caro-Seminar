@@ -32,36 +32,14 @@ string Player2_name;
 
 //Hàm View
 void FixConsoleWindow();
-int ProcessFinish(int pWhoWin);
-void AskContinue();
-void GotoXY(int x, int y);
-void SetColor(int backgound_color, int text_color);
-void HighLight(int x, int y, int w, int h, int color);
-void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
-void DrawMenu(int x, int y, int w, int h, MENU m);
-void Draw_newgame_opt(int x, int y, int w, int h);
-void Hightlight_Play_turn(int x, int y, int w, int h, int color, int player);
-//void DrawRule(int x, int y, int w, int h);
-//Hàm Control
-void StartGame();
-void ExitGame();
-void MoveRight();
-void MoveLeft();
-void MoveUp();
-void MoveDown();
-void MenuUp();
-void MenuDown();
+//Hàm model
 void Play();
-//Hàm Model
-int CheckTick(int pX, int pY);
-int CheckBoard(int pX, int pY);
-int TestBoard();
-void ResetData();
-void Menu();
 
 void main()
 {
 	FixConsoleWindow();
-	system("color F0");
-	Play();
+	while (1)
+	{
+		Play();
+	}
 }

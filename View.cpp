@@ -178,6 +178,7 @@ void Draw_newgame_opt(int x, int y, int w, int h)
 	HighLight(x, y, w, h, 14);
 	DrawOption(x, y, w, h, 14, 0, m.opt1);
 	DrawOption(x, y + (1 + h), w, h, 15, 0, m.opt2);
+	DrawOption(8, 25, 10, 2, 15, 0, "B:BACK");
 }
 
 void DrawBoard(int pSize)
@@ -307,7 +308,6 @@ int ProcessFinish(int pWhoWin)
 	return pWhoWin;
 }
 
-
 void Draw_infor(int x,int y,int w,int h,int player)
 {
 	string s = "";
@@ -378,4 +378,35 @@ void DrawTurn(int x, int y, int w, int h)
 	cout << char(202);
 	Hightlight_Play_turn(x, y, w, h, 14, 1);
 	Draw_infor(x, y +1, w, h, 2);
+}
+
+void DrawAbout()
+{
+	SetColor(15, 0);
+	system("cls");
+	DrawOption(8,25, 10, 2, 15, 0, "B:BACK");
+	GotoXY(30, 6);
+	cout << "This is the Caro Game project of group 4. This assignment is our";
+	GotoXY(30, 7);
+	cout << "own work, except where I have acknowledged the use of the works";
+	GotoXY(30, 8);
+	cout << "of other people. While you play the game, mistakes may inevitably";
+	GotoXY(30, 9);
+	cout << "occur. We appreciate your understanding and feedback.";
+	GotoXY(30, 11);
+	cout << "Lecturer: Truong Toan Thinh";
+	GotoXY(30, 12);
+	cout << "Members: + Nguyen Minh Nha - 22120242";
+	GotoXY(39, 13);
+	cout << "+ Tran Ngoc Nhan - 22120249";
+	GotoXY(39, 14);
+	cout << "+ Tran Thanh Phong - 22120265";
+	GotoXY(39, 15);
+	cout << "+ Cao Tien Minh - 22120207";
+	while (1)
+	{
+		_COMMAND = toupper(_getch());
+		if (_COMMAND == 'B')
+			return;
+	}
 }
