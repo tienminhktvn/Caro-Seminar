@@ -821,6 +821,7 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 	return 0;
 }
 
+
 void InputPvP(int x, int y)
 {
 	SetColor(15, 0);
