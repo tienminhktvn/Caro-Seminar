@@ -71,7 +71,7 @@ void StartGame()
 	DrawTurn(55, _A[0][BOARD_SIZE - 1].y, 60, 12);
 	DrawBoard(BOARD_SIZE);
 	DrawOption(_A[0][0].x - 2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 10, 2, 15, 0, "M:MENU");
-	DrawOption(_A[0][BOARD_SIZE - 1].x-12, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 14, 2, 15, 0, "L:SAVE GAME");
+	DrawOption(_A[0][BOARD_SIZE - 1].x - 12, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 14, 2, 15, 0, "L:SAVE GAME");
 }
 
 /*Hàm thoát game*/
@@ -599,10 +599,11 @@ void PlayPvC()
 					}
 					if (count != 1)
 					{
+
 						//Lượt của bot
 						int pX, pY;
 						Bot(_X, _Y, pX, pY);
-						Sleep(600);
+						Sleep(500);
 						Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
 						Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
 						GotoXY(_X, _Y);
@@ -618,8 +619,31 @@ void PlayPvC()
 						GotoXY(_X, _Y);
 						SetColor(14, 0);
 						cout << "X";
-						_TURN = !_TURN;
-					} 
+
+						//Kiểm tra bot có thắng không
+						switch (ProcessFinish(TestBoard()))
+						{
+						case -1:
+						case 1:
+						case 0:
+							AskContinue();
+							while (1)
+							{
+								int temp = toupper(_getch());
+								if (temp == 'N')
+								{
+									return;
+								}
+								else if (temp == 'Y')
+								{
+									SetColor(15, 0);
+									StartGame();
+									count = 1; //Gán giá trị xác nhận đã chơi lại
+									break;
+								}
+							}
+						}
+					}
 					else
 					{
 						count = 0; //Gán lại bằng 0
