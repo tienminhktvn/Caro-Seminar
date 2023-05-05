@@ -144,7 +144,15 @@ bool xet_dong() {
 			}
 
 			if (demO >= 5 || demX >= 5)
+			{
+				//Hilight giùm trong hàm này nha nhã
+				for (int cot = j; cot >= j - 4; cot--)
+				{
+					cout << cot << " ";
+				}
+
 				return true;
+			}
 		}
 	}
 }
@@ -195,10 +203,16 @@ bool xet_cot()
 					else
 						demX = 0;
 			}
-		}
 
-		if (demO >= 5 || demX >= 5)
-			return true;
+			if (demO >= 5 || demX >= 5)
+			{
+				for (int dong = i; dong >= i - 4; dong--)
+				{
+					cout << dong << " ";
+				}
+				return true;
+			}
+		}
 	}
 }
 
@@ -250,11 +264,19 @@ bool xet_cheo_duoi_phu()
 					else
 						demX = 0;
 			}
-			k++;
-			j--;
 
 			if (demO >= 5 || demX >= 5)
+			{
+				cout << "xet_cheo_duoi_phu" << endl;
+				for (int dong = k, cot = j; dong >= k - 4; dong--, cot++)
+				{
+					cout << dong << " " << cot;
+				}
 				return true;
+			}
+
+			k++;
+			j--;
 		}
 	}
 	return false;
@@ -307,12 +329,21 @@ bool xet_cheo_tren_phu()
 					else
 						demX = 0;
 			}
+
+			if (demO >= 5 || demX >= 5)
+			{
+				cout << "xet_cheo_tren_phu" << endl;
+				cout << i << " " << k;
+				for (int dong = i, cot = k; dong >= i - 4; dong--, cot++)
+				{
+					cout << dong << " " << cot;
+				}
+				return true;
+			}
+
 			k--;
 			i++;
 		}
-
-		if (demO >= 5 || demX >= 5)
-			return true;
 	}
 }
 
@@ -368,7 +399,13 @@ bool xet_chinh()
 					}
 				}
 			}
-			if (demO >= 5 || demX >= 5) {
+			if (demO >= 5 || demX >= 5)
+			{
+				cout << "xet chinh" << endl;
+				for (int dong = i, cot = j; dong <= i + 4; dong++, cot++)
+				{
+					cout << dong << " " << cot << " ";
+				}
 				return true;
 			}
 		}
@@ -424,10 +461,14 @@ bool xet_phu()
 							demX = 0;
 				}
 			}
-		}
 
-		if (demO >= 5 || demX >= 5)
-			return true;
+			if (demO >= 5 || demX >= 5)
+			{
+				cout << "xet phu" << endl;
+				cout << i << " " << j;
+				return true;
+			}
+		}
 	}
 }
 
@@ -478,12 +519,18 @@ bool xet_cheo_phu_ben_trai_cung()
 					else
 						demX = 0;
 			}
+			if (demO >= 5 || demX >= 5)
+			{
+				cout << "xet_cheo_phu_ben_trai_cung" << endl;
+				for (int dong = i, cot = k; cot <= k + 4; dong--, cot++)
+				{
+					cout << dong << " " << cot;
+				}
+				return true;
+			}
 			k--;
 			i++;
 		}
-
-		if (demO >= 5 || demX >= 5)
-			return true;
 	}
 	return false;
 }
@@ -491,19 +538,19 @@ bool xet_cheo_phu_ben_trai_cung()
 //Hàm kiểm tra thắng
 bool WinTest()
 {
-	if (xet_dong() == true)
+	if (xet_dong() == true) //roi
 		return true;
-	if (xet_cot() == true)
+	if (xet_cot() == true) //roi
 		return true;
-	if (xet_cheo_duoi_phu() == true)
+	if (xet_cheo_duoi_phu() == true) //roi
 		return true;
 	if (xet_cheo_tren_phu() == true)
 		return true;
-	if (xet_chinh() == true)
+	if (xet_chinh() == true) //roi
 		return true;
-	if (xet_phu() == true)
+	if (xet_phu() == true) //roi
 		return true;
-	if (xet_cheo_phu_ben_trai_cung() == true)
+	if (xet_cheo_phu_ben_trai_cung() == true) //roi
 		return true;
 	return false;
 }
@@ -757,7 +804,7 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 		}
 		case 5:
 		{
-			for (int i = row, j = col; i >= 0, j < BOARD_SIZE; i--, j++)
+			for (int i = row ,j = col; i >= 0 && j < BOARD_SIZE; i--, j++)
 			{
 				if (row <= 1)
 					break;
@@ -773,7 +820,7 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 		}
 		case 6:
 		{
-			for (int i = row, j = col; i >= 0, j >= 0; i--, j--)
+			for (int i = row, j = col; i >= 0 && j >= 0; i--, j--)
 			{
 				if (row <= 1)
 					break;
@@ -789,7 +836,7 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 		}
 		case 7:
 		{
-			for (int i = row, j = col; i < BOARD_SIZE, j < BOARD_SIZE; i++, j++)
+			for (int i = row, j = col; i < BOARD_SIZE && j < BOARD_SIZE; i++, j++)
 			{
 				if (_A[i][j].c == 0)
 				{
@@ -803,7 +850,7 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 		}
 		case 8:
 		{
-			for (int i = row, j = col; i < BOARD_SIZE, j >= 0; i++, j--)
+			for (int i = row, j = col; i < BOARD_SIZE && j >= 0; i++, j--)
 			{
 				if (_A[i][j].c == 0)
 				{
