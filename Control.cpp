@@ -638,15 +638,10 @@ void PlayPvC()
 								{
 									SetColor(15, 0);
 									StartGame();
-									count = 1; //Gán giá trị xác nhận đã chơi lại
 									break;
 								}
 							}
 						}
-					}
-					else
-					{
-						count = 0; //Gán lại bằng 0
 					}
 				}
 				validEnter = true; //Mở khóa
