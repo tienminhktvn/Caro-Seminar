@@ -620,6 +620,9 @@ void PlayPvC()
 						SetColor(14, 0);
 						cout << "X";
 
+						if (count == -2)
+							count = 0;
+
 						//Kiểm tra bot có thắng không
 						switch (ProcessFinish(TestBoard()))
 						{
@@ -638,11 +641,14 @@ void PlayPvC()
 								{
 									SetColor(15, 0);
 									StartGame();
+									count = -2; //Gán giá trị xác nhận máy win và đã chơi lại
 									break;
 								}
 							}
 						}
 					}
+					else
+						count = 0;
 				}
 				validEnter = true; //Mở khóa
 			}
