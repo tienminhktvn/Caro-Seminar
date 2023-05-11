@@ -44,7 +44,7 @@ void DrawBox(int x, int y, int w, int h);
 void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
 void DrawMenu(int x, int y, int w, int h, MENU m);
 void Draw_newgame_opt(int x, int y, int w, int h);
-void Hightlight_Play_turn(int x, int y, int w, int h, int color, int player);
+void Highlight_Play_turn(int x, int y, int w, int h, int color, int player);
 void DrawBoard(int pSize);
 void DrawTurn(int x, int y, int w, int h);
 //Hàm Control
@@ -336,13 +336,13 @@ void PlayPvP()
 					{
 						if (_TURN == true)
 						{
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
 						}
 						else
 						{
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
 						}
 						break;
 					}
@@ -567,13 +567,13 @@ void PlayPvC()
 					{
 						if (_TURN == true)
 						{
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
 						}
 						else
 						{
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
-							Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
+							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
 						}
 						break;
 					}
@@ -603,9 +603,6 @@ void PlayPvC()
 						//Lượt của bot
 						int pX, pY;
 						Bot(_X, _Y, pX, pY);
-						Sleep(500);
-						Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
-						Hightlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
 						GotoXY(_X, _Y);
 						SetColor(15, 0);
 						cout << "X";
@@ -613,6 +610,8 @@ void PlayPvC()
 						SetColor(14, 0);
 						cout << "O";
 						Sleep(600);
+						Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
+						Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
 						GotoXY(_A[pX][pY].x, _A[pX][pY].y);
 						SetColor(15, 0);
 						cout << "O";

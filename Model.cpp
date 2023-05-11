@@ -31,6 +31,7 @@ extern int Score1;
 extern int Score2;
 extern string Player1_name;
 extern string Player2_name;
+extern int win_location[11];
 
 //nhom ham view
 void GotoXY(int x, int y);
@@ -41,6 +42,7 @@ void Draw_newgame_opt(int x, int y, int w, int h);
 void DrawMenu(int x, int y, int w, int h, MENU m);
 void DrawAbout();
 void printLogo();
+void Highlight_win();
 //nhom ham control
 void MenuUp(int& o);
 void MenuDown(int& o, int n);
@@ -74,7 +76,6 @@ void ResetData()
 	Player1_name = "";
 	Player2_name = "";
 }
-
 
 //Kiểm tra đã đủ 80% quân cờ trên bàn cờ chưa
 bool isfull()
@@ -145,10 +146,16 @@ bool xet_dong() {
 
 			if (demO >= 5 || demX >= 5)
 			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
 				//Hilight giùm trong hàm này nha nhã
-				for (int cot = j; cot >= j - 4; cot--)
+				for (int cot = j,temp=1; cot >= j - 4; cot--,temp+=2)
 				{
-					cout << cot << " ";
+					/*cout << cot << " ";*/
+					win_location[temp] = i;//i la dong
+					win_location[temp + 1] = cot;
 				}
 
 				return true;
@@ -206,9 +213,14 @@ bool xet_cot()
 
 			if (demO >= 5 || demX >= 5)
 			{
-				for (int dong = i; dong >= i - 4; dong--)
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i,temp=1; dong >= i - 4; dong--,temp+=2)
 				{
-					cout << dong << " ";
+					win_location[temp] = dong;
+					win_location[temp+1] = j;
 				}
 				return true;
 			}
@@ -267,10 +279,14 @@ bool xet_cheo_duoi_phu()
 
 			if (demO >= 5 || demX >= 5)
 			{
-				cout << "xet_cheo_duoi_phu" << endl;
-				for (int dong = k, cot = j; dong >= k - 4; dong--, cot++)
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = k, cot = j,temp=1; dong >= k - 4; dong--, cot++,temp+=2)
 				{
-					cout << dong << " " << cot;
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
 				}
 				return true;
 			}
@@ -332,11 +348,14 @@ bool xet_cheo_tren_phu()
 
 			if (demO >= 5 || demX >= 5)
 			{
-				cout << "xet_cheo_tren_phu" << endl;
-				cout << i << " " << k;
-				for (int dong = i, cot = k; dong >= i - 4; dong--, cot++)
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, cot = k,temp=1; dong >= i - 4; dong--, cot++,temp+=2)
 				{
-					cout << dong << " " << cot;
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
 				}
 				return true;
 			}
@@ -401,75 +420,20 @@ bool xet_chinh()
 			}
 			if (demO >= 5 || demX >= 5)
 			{
-				cout << "xet chinh" << endl;
-				for (int dong = i, cot = j; dong <= i + 4; dong++, cot++)
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, cot = j,temp=1; dong <= i + 4; dong++, cot++,temp+=2)
 				{
-					cout << dong << " " << cot << " ";
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
 				}
 				return true;
 			}
 		}
 	}
 	return false;
-}
-
-bool xet_phu()
-{
-	int demO = 0, demX = 0;
-	for (int i = 0; i < BOARD_SIZE; i++)
-	{
-		demX = 0;
-		demO = 0;
-		for (int j = 0; j < BOARD_SIZE; j++)
-		{
-			if (i + j == BOARD_SIZE - 1)
-			{
-				if (_A[i][j].c == 1) //O
-					demO++;
-				else
-				{
-					if (_A[i][j].c == -1) //X
-					{
-						if (demO >= 5 && _A[i - demO + 1][j + demO + 1].c != -1) //X
-							demO = 5;
-						else
-							demO = 0;
-					}
-					if (_A[i][j].c == 0)
-					{
-						if (demO >= 5)
-							demO = 5;
-						else
-							demO = 0;
-					}
-				}
-				if (_A[i][j].c == -1) //X
-					demX++;
-				else
-				{
-					if (_A[i][j].c == 1) //O
-					{
-						if (demX >= 5 && _A[i - demX + 1][j + demX + 1].c != 1) //O
-							demX = 5;
-						else
-							demX = 0;
-					}
-					if (_A[i][j].c == 0)
-						if (demX >= 5)
-							demX = 5;
-						else
-							demX = 0;
-				}
-			}
-
-			if (demO >= 5 || demX >= 5)
-			{
-				cout << "xet phu" << endl;
-				cout << i << " " << j;
-				return true;
-			}
-		}
-	}
 }
 
 bool xet_cheo_phu_ben_trai_cung()
@@ -521,10 +485,14 @@ bool xet_cheo_phu_ben_trai_cung()
 			}
 			if (demO >= 5 || demX >= 5)
 			{
-				cout << "xet_cheo_phu_ben_trai_cung" << endl;
-				for (int dong = i, cot = k; cot <= k + 4; dong--, cot++)
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, cot = k,temp=1; cot <= k + 4; dong--, cot++,temp+=2)
 				{
-					cout << dong << " " << cot;
+					win_location[temp] = dong;
+					win_location[temp+1] = cot;
 				}
 				return true;
 			}
@@ -547,8 +515,6 @@ bool WinTest()
 	if (xet_cheo_tren_phu() == true)
 		return true;
 	if (xet_chinh() == true) //roi
-		return true;
-	if (xet_phu() == true) //roi
 		return true;
 	if (xet_cheo_phu_ben_trai_cung() == true) //roi
 		return true;
@@ -804,7 +770,7 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 		}
 		case 5:
 		{
-			for (int i = row ,j = col; i >= 0 && j < BOARD_SIZE; i--, j++)
+			for (int i = row, j = col; i >= 0 && j < BOARD_SIZE; i--, j++)
 			{
 				if (row <= 1)
 					break;
@@ -867,7 +833,6 @@ int Bot(int _X, int _Y, int& pX, int& pY)
 
 	return 0;
 }
-
 
 void InputPvP(int x, int y)
 {

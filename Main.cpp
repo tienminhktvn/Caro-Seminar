@@ -29,6 +29,7 @@ int Score1;
 int Score2;
 string Player1_name;
 string Player2_name;
+int win_location[11];
 
 //Hàm View
 void FixConsoleWindow();
