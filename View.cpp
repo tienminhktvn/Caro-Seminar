@@ -29,6 +29,9 @@ extern int Score1;
 extern int Score2;
 extern string Player1_name;
 extern string Player2_name;
+extern int win_location[11];
+
+int CheckTick(int pX, int pY);
 
 /*Hàm cố định màn hình*/
 void FixConsoleWindow()
@@ -69,7 +72,7 @@ void SetColor(int backgound_color, int text_color)
 void AskContinue()
 {
 	GotoXY(60, 16);
-	cout << "Nhan phim \"Y\" de tiep tuc hoac \"N\" de dung tro choi";
+	cout << "Press \"Y\" to continue or \"N\" to stop the current game";
 }
 
 /*Hàm vẽ 1 cái box*/
@@ -257,6 +260,68 @@ void DrawBoard(int pSize)
 	GotoXY(_X + 0, _Y + 0);
 }
 
+void Highlight_win()
+{
+	string s;
+	if (win_location[0] == -1)
+		s = "X";
+	else
+	{
+		SetColor(15, 0);
+		GotoXY(_X, _Y);
+		cout << "X"; //Truong hop danh voi may
+		s = "O";
+	}
+
+	SetColor(14, 0);
+	for (int i = 1; i < 11; i += 2)
+	{
+		GotoXY(_A[win_location[i]][win_location[i+1]].x, _A[win_location[i]][win_location[i + 1]].y);
+		cout << s;
+	}
+}
+
+void DrawOWin(int x, int y,int color)
+{
+	HighLight(x - 5, y - 2, 60, 8, color);
+	SetColor(color, 0);
+	DrawBox(x - 5, y - 2, 60, 8);
+	GotoXY(x - 3, y); //Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
+	cout << "    OOOOOOOOO       OOOO       OOOO OOOOO OOOOOO     OOOO";
+	GotoXY(x - 3, y + 1); cout << "  OOOO     OOOO     OOOO       OOOO  OOO  OOOO OO    OOOO";
+	GotoXY(x - 3, y + 2); cout << "OOOO         OOOO   OOOO       OOOO  OOO  OOOO  OO   OOOO";
+	GotoXY(x - 3, y + 3); cout << "OOOO         OOOO   OOOO  OOO  OOOO  OOO  OOOO   OO  OOOO";
+	GotoXY(x - 3, y + 4); cout << "  OOOO     OOOO     OOOO OO OO OOOO  OOO  OOOO    OO OOOO";
+	GotoXY(x - 3, y + 5); cout << "    OOOOOOOOO       OOOOOO   OOOOOO OOOOO OOOO     OOOOOO";
+}
+
+void DrawXWin(int x, int y, int color) {
+	HighLight(x - 5, y - 2, 60, 8, color);
+	SetColor(color, 0);
+	DrawBox(x - 5, y - 2, 60, 8);
+	GotoXY(x, y); //Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
+	cout << "XXXX    XXXX    XXXX       XXXX XXXXX XXXXXX     XXXX";
+	GotoXY(x, y + 1); cout << "  XXX  XXX      XXXX       XXXX  XXX  XXXX XX    XXXX";
+	GotoXY(x, y + 2); cout << "    XXXXX       XXXX       XXXX  XXX  XXXX  XX   XXXX";
+	GotoXY(x, y + 3); cout << "    XXXXX       XXXX  XXX  XXXX  XXX  XXXX   XX  XXXX";
+	GotoXY(x, y + 4); cout << "  XXXX XXXX     XXXX XX XX XXXX  XXX  XXXX    XX XXXX";
+	GotoXY(x, y + 5); cout << "XXXX     XXXX   XXXXXX   XXXXXX XXXXX XXXX     XXXXXX";
+}
+
+void DrawDraw(int x, int y, int color)
+{
+	HighLight(x - 5, y - 2, 60, 8, color);
+	SetColor(color, 0);
+	DrawBox(x - 5, y - 2, 60, 8);
+	GotoXY(x - 4, y); //Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
+	cout << " ########      ########          ####       ###       ###";
+	GotoXY(x - 4, y + 1);  cout << " ###   ###     ###   ###       ###  ###     ###       ###";
+	GotoXY(x - 4, y + 2);  cout << " ###     ###   ###  ###       ###    ###    ###       ###";
+	GotoXY(x - 4, y + 3); cout << " ###     ###   #######       ############   ###  ###  ###";
+	GotoXY(x - 4, y + 4); cout << " ###   ###     ###  ###     ###        ###  ### ## ## ###";
+	GotoXY(x - 4, y + 5); cout << " ########      ###   ###   ###          ### #####   #####";
+}
+
 int ProcessFinish(int pWhoWin)
 {
 	int x = 60, y = 21;
@@ -264,42 +329,38 @@ int ProcessFinish(int pWhoWin)
 	switch (pWhoWin)
 	{
 	case 1:
-		HighLight(x - 5, y - 2, 60, 8,14);
-		SetColor(14, 0);
-		DrawBox(x-5, y-2, 60, 8);
-		GotoXY(x - 3, y); //Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
-		                      cout << "    OOOOOOOOO       OOOO       OOOO OOOOO OOOOOO     OOOO";
-		GotoXY(x - 3, y + 1); cout << "  OOOO     OOOO     OOOO       OOOO  OOO  OOOO OO    OOOO";
-		GotoXY(x - 3, y + 2); cout << "OOOO         OOOO   OOOO       OOOO  OOO  OOOO  OO   OOOO";
-		GotoXY(x - 3, y + 3); cout << "OOOO         OOOO   OOOO  OOO  OOOO  OOO  OOOO   OO  OOOO";
-		GotoXY(x - 3, y + 4); cout << "  OOOO     OOOO     OOOO OO OO OOOO  OOO  OOOO    OO OOOO";
-		GotoXY(x - 3, y + 5); cout << "    OOOOOOOOO       OOOOOO   OOOOOO OOOOO OOOO     OOOOOO";
+		Highlight_win();
+		DrawOWin(x, y,9);
+		Sleep(500);
+		DrawOWin(x, y, 10);
+		Sleep(500);
+		DrawOWin(x, y, 11);
+		Sleep(500);
+		DrawOWin(x, y, 14);
+		Sleep(500);
 		Score2++;
 		break;
 	case -1:
-		HighLight(x - 5, y - 2, 60, 8, 14);
-		SetColor(14, 0);
-		DrawBox(x - 5, y - 2, 60, 8);
-		GotoXY(x, y); //Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
-		                  cout << "XXXX    XXXX    XXXX       XXXX XXXXX XXXXXX     XXXX";
-		GotoXY(x, y + 1); cout << "  XXX  XXX      XXXX       XXXX  XXX  XXXX XX    XXXX";
-		GotoXY(x, y + 2); cout << "    XXXXX       XXXX       XXXX  XXX  XXXX  XX   XXXX";
-		GotoXY(x, y + 3); cout << "    XXXXX       XXXX  XXX  XXXX  XXX  XXXX   XX  XXXX";
-		GotoXY(x, y + 4); cout << "  XXXX XXXX     XXXX XX XX XXXX  XXX  XXXX    XX XXXX";
-		GotoXY(x, y + 5); cout << "XXXX     XXXX   XXXXXX   XXXXXX XXXXX XXXX     XXXXXX";
+		Highlight_win();
+		DrawXWin(x, y, 9);
+		Sleep(500);
+		DrawXWin(x, y, 10);
+		Sleep(500);
+		DrawXWin(x, y, 11);
+		Sleep(500);
+		DrawXWin(x, y, 14);
+		Sleep(500);
 		Score1++;
 		break;
 	case 0:
-		HighLight(x - 5, y - 2, 60, 8, 14);
-		SetColor(14, 0);
-		DrawBox(x - 5, y - 2, 60, 8);
-		GotoXY(x - 4, y); //Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
-		                      cout << " ########      ########          ####       ###       ###";
-		GotoXY(x -4, y + 1);  cout << " ###   ###     ###   ###       ###  ###     ###       ###";
-		GotoXY(x -4, y + 2);  cout << " ###     ###   ###  ###       ###    ###    ###       ###";
-		GotoXY(x - 4, y + 3); cout << " ###     ###   #######       ############   ###  ###  ###";
-		GotoXY(x - 4, y + 4); cout << " ###   ###     ###  ###     ###        ###  ### ## ## ###";
-		GotoXY(x - 4, y + 5); cout << " ########      ###   ###   ###          ### #####   #####";
+		DrawDraw(x, y, 9);
+		Sleep(500);
+		DrawDraw(x, y, 10);
+		Sleep(500);
+		DrawDraw(x, y, 11);
+		Sleep(500);
+		DrawDraw(x, y, 14);
+		Sleep(500);
 		break;
 	case 2:
 		_TURN = !_TURN; //Đổi lượt nếu không có gì xảy ra
@@ -343,7 +404,7 @@ void Draw_infor(int x,int y,int w,int h,int player)
 	}
 }
 
-void Hightlight_Play_turn(int x, int y, int w, int h,int color,int player)
+void Highlight_Play_turn(int x, int y, int w, int h,int color,int player)
 {
 	if (player == 1)
 	{
@@ -376,7 +437,7 @@ void DrawTurn(int x, int y, int w, int h)
 	cout << char(203);
 	GotoXY(x + w / 2, y + h);
 	cout << char(202);
-	Hightlight_Play_turn(x, y, w, h, 14, 1);
+	Highlight_Play_turn(x, y, w, h, 14, 1);
 	Draw_infor(x, y +1, w, h, 2);
 }
 
