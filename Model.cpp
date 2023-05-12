@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <conio.h>
 #include <time.h>
+#include <fstream>
+#include <vector>
 using namespace std;
 
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
@@ -18,6 +20,13 @@ extern _POINT _A[BOARD_SIZE][BOARD_SIZE]; //Ma trận bàn cờ
 extern bool _TURN; //true là lượt người thứ nhất và false là lượt người thứ hai
 extern int _COMMAND; //Biến nhận giá trị phím người dùng nhập
 extern int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
+
+struct Player
+{
+	string name;
+	int score;
+};
+
 extern struct MENU
 {
 	string opt1;
@@ -34,22 +43,30 @@ extern string Player2_name;
 extern int win_location[11];
 
 //nhom ham view
+int ProcessFinish(int pWhoWin);
+void AskContinue();
 void GotoXY(int x, int y);
-void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
-void HighLight(int x, int y, int w, int h, int color);
 void SetColor(int backgound_color, int text_color);
-void Draw_newgame_opt(int x, int y, int w, int h);
+void HighLight(int x, int y, int w, int h, int color);
+void DrawBox(int x, int y, int w, int h);
+void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s);
 void DrawMenu(int x, int y, int w, int h, MENU m);
+void Draw_newgame_opt(int x, int y, int w, int h);
+void Highlight_Play_turn(int x, int y, int w, int h, int color, int player);
+void DrawBoard(int pSize);
+void DrawTurn(int x, int y, int w, int h);
+void PrintText(string text, int color, int x, int y);
+void DrawLoaded(_POINT _A[][BOARD_SIZE]);
 void DrawAbout();
-void printLogo();
-void Highlight_win();
+
 //nhom ham control
 void MenuUp(int& o);
 void MenuDown(int& o, int n);
 void StartGame();
 void PlayPvP();
 void PlayPvC();
-
+void SaveGame();
+void LoadGame(string filename);
 
 /*Hàm khởi tạo dữ liệu mặc định ban đầu cho ma trận bàn cờ*/
 void ResetGame()
@@ -151,7 +168,7 @@ bool xet_dong() {
 				else win_location[0] = -1;
 
 				//Hilight giùm trong hàm này nha nhã
-				for (int cot = j,temp=1; cot >= j - 4; cot--,temp+=2)
+				for (int cot = j, temp = 1; cot >= j - 4; cot--, temp += 2)
 				{
 					/*cout << cot << " ";*/
 					win_location[temp] = i;//i la dong
@@ -217,10 +234,10 @@ bool xet_cot()
 					win_location[0] = 1;
 				else win_location[0] = -1;
 
-				for (int dong = i,temp=1; dong >= i - 4; dong--,temp+=2)
+				for (int dong = i, temp = 1; dong >= i - 4; dong--, temp += 2)
 				{
 					win_location[temp] = dong;
-					win_location[temp+1] = j;
+					win_location[temp + 1] = j;
 				}
 				return true;
 			}
@@ -283,7 +300,7 @@ bool xet_cheo_duoi_phu()
 					win_location[0] = 1;
 				else win_location[0] = -1;
 
-				for (int dong = k, cot = j,temp=1; dong >= k - 4; dong--, cot++,temp+=2)
+				for (int dong = k, cot = j, temp = 1; dong >= k - 4; dong--, cot++, temp += 2)
 				{
 					win_location[temp] = dong;
 					win_location[temp + 1] = cot;
@@ -352,7 +369,7 @@ bool xet_cheo_tren_phu()
 					win_location[0] = 1;
 				else win_location[0] = -1;
 
-				for (int dong = i, cot = k,temp=1; dong >= i - 4; dong--, cot++,temp+=2)
+				for (int dong = i, cot = k, temp = 1; dong >= i - 4; dong--, cot++, temp += 2)
 				{
 					win_location[temp] = dong;
 					win_location[temp + 1] = cot;
@@ -424,7 +441,7 @@ bool xet_chinh()
 					win_location[0] = 1;
 				else win_location[0] = -1;
 
-				for (int dong = i, cot = j,temp=1; dong <= i + 4; dong++, cot++,temp+=2)
+				for (int dong = i, cot = j, temp = 1; dong <= i + 4; dong++, cot++, temp += 2)
 				{
 					win_location[temp] = dong;
 					win_location[temp + 1] = cot;
@@ -489,10 +506,10 @@ bool xet_cheo_phu_ben_trai_cung()
 					win_location[0] = 1;
 				else win_location[0] = -1;
 
-				for (int dong = i, cot = k,temp=1; cot <= k + 4; dong--, cot++,temp+=2)
+				for (int dong = i, cot = k, temp = 1; cot <= k + 4; dong--, cot++, temp += 2)
 				{
 					win_location[temp] = dong;
-					win_location[temp+1] = cot;
+					win_location[temp + 1] = cot;
 				}
 				return true;
 			}
@@ -845,8 +862,19 @@ void InputPvP(int x, int y)
 	{
 		c = toupper(_getch());
 		if (c == 13) break;
-		cout << c;
-		Player1_name += c;
+		if (c == 8)
+		{
+			Player1_name.pop_back();
+			GotoXY(x + 19, y);
+			cout << Player1_name;
+			cout << " ";
+			GotoXY(x + 19 + Player1_name.length(), y);
+		}
+		else
+		{
+			cout << c;
+			Player1_name += c;
+		}
 	}
 	GotoXY(x, y + 2);
 	cout << "Nhap ten Player 2: ";
@@ -854,8 +882,19 @@ void InputPvP(int x, int y)
 	{
 		c = toupper(_getch());
 		if (c == 13) break;
-		cout << c;
-		Player2_name += c;
+		if (c == 8)
+		{
+			Player2_name.pop_back();
+			GotoXY(x + 19, y + 2);
+			cout << Player2_name;
+			cout << " ";
+			GotoXY(x + 19 + Player2_name.length(), y + 2);
+		}
+		else
+		{
+			cout << c;
+			Player2_name += c;
+		}
 	}
 }
 
@@ -871,8 +910,19 @@ void InputPvC(int x, int y)
 	{
 		c = toupper(_getch());
 		if (c == 13) break;
-		cout << c;
-		Player1_name += c;
+		if (c == 8)
+		{
+			Player1_name.pop_back();
+			GotoXY(x + 19, y);
+			cout << Player1_name;
+			cout << " ";
+			GotoXY(x + 19 + Player1_name.length(), y);
+		}
+		else
+		{
+			cout << c;
+			Player1_name += c;
+		}
 	}
 }
 
@@ -931,6 +981,99 @@ void Newgame_opt()
 	}
 }
 
+void SaveData(string filename) {
+	ofstream savefile;
+	savefile.open(filename, ios::out);
+
+	savefile << Player1_name << endl;
+	savefile << Score1 << endl;
+	savefile << Player2_name << endl;
+	savefile << Score2 << endl;
+
+	savefile << _TURN << endl;
+
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			savefile << _A[i][j].c << " ";
+		}
+		savefile << endl;
+	}
+	savefile.close();
+}
+
+void LoadData(string filename) {
+	ifstream loadfile;
+	int turn;
+	Player P[2];
+	loadfile.open(filename, ios::in);
+	for (int i = 0; i < 2; i++) {
+		string name = "";
+		int score = 0;
+		if (i == 1) {
+			loadfile.ignore();
+		}
+		getline(loadfile, name);
+		loadfile >> score;
+		P[i].name = name;
+		P[i].score = score;
+	}
+	loadfile >> turn;
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			int x = 0;
+			loadfile >> x;
+			_A[i][j].x = 4 * j + LEFT + 2; //Trung voi hoanh do ban co
+			_A[i][j].y = 2 * i + TOP + 1; //Trung voi tung do ban co
+			_A[i][j].c = x;
+		}
+	}
+	Player1_name = P[0].name;
+	Score1 = P[0].score;
+	Player2_name = P[1].name;
+	Score2 = P[1].score;
+	_TURN = turn;
+
+	loadfile.close();
+
+	_COMMAND = -1;
+	_X = _A[0][0].x;
+	_Y = _A[0][0].y;
+}
+
+vector<string> LoadFiles()
+{
+	vector<string> files;
+	string filename;
+
+	ifstream savedFile;
+	savedFile.open("gamelist.txt", fstream::in);
+
+	while (savedFile >> filename)
+	{
+		files.push_back(filename);
+	}
+	savedFile.close();
+
+	return files;
+}
+
+bool CheckFileExistence(string filename) {
+	string name;
+
+	ifstream savedfile;
+	savedfile.open("gamelist.txt", ios::in);
+
+	while (savedfile >> name) {
+		if (name == filename) {
+			savedfile.close();
+			return true;
+		}
+	}
+	savedfile.close();
+	return false;
+}
+
+
 void Play()
 {
 	system("color F0");
@@ -947,6 +1090,29 @@ void Play()
 			case 1:
 				Newgame_opt();
 				return;
+			case 2: {
+				system("cls");
+				system("color F0");
+				string filename;
+				vector<string> files;
+				files = LoadFiles();
+				int j = 10;
+				PrintText("Danh sach file game da luu: ", 100, 40, 9);
+				for (int i = 0; i < files.size(); i++) {
+					PrintText(files[i], 15, 40, j);
+					j++;
+				}
+				PrintText("Nhap ten file ban muon tai: ", 100, 40, j);
+				getline(cin, filename);
+				LoadGame(filename);
+				DrawLoaded(_A);
+				GotoXY(_X, _Y);
+				if (Player2_name == "COMPUTER") {
+					PlayPvC();
+				}
+				else { PlayPvP(); };
+				return;
+			}
 			case 3:
 				DrawAbout();
 				return;
