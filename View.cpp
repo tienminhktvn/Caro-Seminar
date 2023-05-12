@@ -2,6 +2,7 @@
 #include <iostream>
 #include <conio.h>
 #include <string>
+#include <vector>
 using namespace std;
 
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
@@ -76,9 +77,9 @@ void AskContinue()
 }
 
 /*Hàm vẽ 1 cái box*/
-void DrawBox(int x,int y, int w, int h)
+void DrawBox(int x, int y, int w, int h)
 {
-	if (w <= 1 || h<=1 || w % 2 != 0 || h % 2 != 0)
+	if (w <= 1 || h <= 1 || w % 2 != 0 || h % 2 != 0)
 		return;
 	GotoXY(x, y);
 	cout << char(201);
@@ -104,17 +105,17 @@ void DrawBox(int x,int y, int w, int h)
 	}
 }
 
-void TextBox(int x,int y,int w,int h,string s)
+void TextBox(int x, int y, int w, int h, string s)
 {
 	int length = s.size();
-	GotoXY(x + (w - length) / 2 + 1, y + h / 2 );
+	GotoXY(x + (w - length) / 2 + 1, y + h / 2);
 	cout << s;
 }
 
-void HighLight(int x, int y,int w,int h,int color)
+void HighLight(int x, int y, int w, int h, int color)
 {
 	SetColor(color, color);
-	for(int i=x;i<x+w;i++)
+	for (int i = x; i < x + w; i++)
 		for (int j = y; j < y + h; j++)
 		{
 			GotoXY(i, j);
@@ -123,7 +124,7 @@ void HighLight(int x, int y,int w,int h,int color)
 	SetColor(15, 0);
 }
 
-void DrawOption(int x,int y,int w,int h,int b_color,int t_color,string s)
+void DrawOption(int x, int y, int w, int h, int b_color, int t_color, string s)
 {
 	SetColor(b_color, t_color);
 	DrawBox(x, y, w, h);
@@ -150,7 +151,7 @@ void printLogo(int x)
 	}
 }
 
-void DrawMenu(int x,int y,int w,int h,MENU m)
+void DrawMenu(int x, int y, int w, int h, MENU m)
 {
 	system("cls");
 	/*printLogo(10);
@@ -276,12 +277,12 @@ void Highlight_win()
 	SetColor(14, 0);
 	for (int i = 1; i < 11; i += 2)
 	{
-		GotoXY(_A[win_location[i]][win_location[i+1]].x, _A[win_location[i]][win_location[i + 1]].y);
+		GotoXY(_A[win_location[i]][win_location[i + 1]].x, _A[win_location[i]][win_location[i + 1]].y);
 		cout << s;
 	}
 }
 
-void DrawOWin(int x, int y,int color)
+void DrawOWin(int x, int y, int color)
 {
 	HighLight(x - 5, y - 2, 60, 8, color);
 	SetColor(color, 0);
@@ -330,7 +331,7 @@ int ProcessFinish(int pWhoWin)
 	{
 	case 1:
 		Highlight_win();
-		DrawOWin(x, y,9);
+		DrawOWin(x, y, 9);
 		Sleep(500);
 		DrawOWin(x, y, 10);
 		Sleep(500);
@@ -369,7 +370,7 @@ int ProcessFinish(int pWhoWin)
 	return pWhoWin;
 }
 
-void Draw_infor(int x,int y,int w,int h,int player)
+void Draw_infor(int x, int y, int w, int h, int player)
 {
 	string s = "";
 	if (player == 1)
@@ -404,7 +405,7 @@ void Draw_infor(int x,int y,int w,int h,int player)
 	}
 }
 
-void Highlight_Play_turn(int x, int y, int w, int h,int color,int player)
+void Highlight_Play_turn(int x, int y, int w, int h, int color, int player)
 {
 	if (player == 1)
 	{
@@ -417,15 +418,15 @@ void Highlight_Play_turn(int x, int y, int w, int h,int color,int player)
 	}
 	else
 	{
-		HighLight(x+ w / 2, y, w / 2, h, color);
-		DrawBox(x+w / 2, y, w / 2, h);
+		HighLight(x + w / 2, y, w / 2, h, color);
+		DrawBox(x + w / 2, y, w / 2, h);
 		GotoXY(x + w / 2, y);
 		cout << char(203);
 		GotoXY(x + w / 2, y + h);
 		cout << char(202);
 	}
 	SetColor(color, 0);
-	Draw_infor(x, y+1, w, h, player);
+	Draw_infor(x, y + 1, w, h, player);
 	SetColor(15, 0);
 }
 
@@ -438,14 +439,14 @@ void DrawTurn(int x, int y, int w, int h)
 	GotoXY(x + w / 2, y + h);
 	cout << char(202);
 	Highlight_Play_turn(x, y, w, h, 14, 1);
-	Draw_infor(x, y +1, w, h, 2);
+	Draw_infor(x, y + 1, w, h, 2);
 }
 
 void DrawAbout()
 {
 	SetColor(15, 0);
 	system("cls");
-	DrawOption(8,25, 10, 2, 15, 0, "B:BACK");
+	DrawOption(8, 25, 10, 2, 15, 0, "B:BACK");
 	GotoXY(30, 6);
 	cout << "This is the Caro Game project of group 4. This assignment is our";
 	GotoXY(30, 7);
@@ -469,5 +470,31 @@ void DrawAbout()
 		_COMMAND = toupper(_getch());
 		if (_COMMAND == 'B')
 			return;
+	}
+}
+
+void PrintText(string text, int color, int x, int y)
+{
+	GotoXY(x, y);
+	SetColor(15, 0);
+	cout << text;
+	SetColor(15, 0);
+}
+
+void DrawLoaded(_POINT _A[][BOARD_SIZE]) {
+	DrawBox(55, 19, 60, 8);
+	DrawTurn(55, _A[0][BOARD_SIZE - 1].y, 60, 12);
+	DrawOption(_A[0][0].x - 2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 10, 2, 15, 0, "M:MENU");
+	DrawOption(_A[0][BOARD_SIZE - 1].x - 12, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 14, 2, 15, 0, "L:SAVE GAME");
+	DrawBoard(BOARD_SIZE);
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			if (_A[i][j].c == -1) {
+				PrintText("X", 15, _A[i][j].x, _A[i][j].y);
+			}
+			else if (_A[i][j].c == 1) {
+				PrintText("O", 15, _A[i][j].x, _A[i][j].y);
+			}
+		}
 	}
 }
