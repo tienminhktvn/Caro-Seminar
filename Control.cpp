@@ -3,6 +3,9 @@
 #include <string>
 #include <conio.h>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
 using namespace std;
 
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
@@ -17,6 +20,9 @@ extern _POINT _A[BOARD_SIZE][BOARD_SIZE]; //Ma trận bàn cờ
 extern bool _TURN; //true là lượt người thứ nhất và false là lượt người thứ hai
 extern int _COMMAND; //Biến nhận giá trị phím người dùng nhập
 extern int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
+
+
+
 extern struct MENU
 {
 	string opt1;
@@ -24,6 +30,7 @@ extern struct MENU
 	string opt3;
 	string opt4;
 };
+
 extern MENU menu;
 extern int _OPTION;
 extern int Total_game;
@@ -47,6 +54,10 @@ void Draw_newgame_opt(int x, int y, int w, int h);
 void Highlight_Play_turn(int x, int y, int w, int h, int color, int player);
 void DrawBoard(int pSize);
 void DrawTurn(int x, int y, int w, int h);
+void DrawBoard(int pSize);
+void DrawTurn(int x, int y, int w, int h);
+void PrintText(string text, int color, int x, int y);
+void DrawLoaded(_POINT _A[][BOARD_SIZE]);
 //Hàm Control
 void ExitGame();
 void MoveRight();
@@ -55,13 +66,19 @@ void MoveUp();
 void MoveDown();
 void MenuUp();
 void MenuDown();
+void SaveGame();
+void LoadGame(string filename);
 //Hàm Model
+void Play();
 int CheckTick(int pX, int pY);
 int CheckBoard(int pX, int pY);
 int TestBoard();
 void ResetData();
 int Bot(int _X, int _Y, int& pX, int& pY);
-
+void SaveData(string filename);
+void LoadData(string filename);
+vector<string> LoadFiles();
+bool CheckFileExistence(string filename);
 /*Hàm dọn dẹp tài nguyên*/
 void StartGame()
 {
@@ -140,6 +157,43 @@ void MenuDown(int& o, int n)
 		GotoXY(_X, _Y);
 		o++;
 	}
+}
+
+void SaveGame() {
+	string filename;
+	int i = 2;
+	system("cls");
+	system("color F0");
+	PrintText("Nhap file name ban muon luu: ", 15, 40, 15);
+	do {
+		getline(cin, filename);
+		filename += ".txt";
+		if (!CheckFileExistence(filename)) {
+			break;
+		}
+		else {
+			GotoXY(60, 15 + i);
+			PrintText("Nhap lai ten khac: ", 15, 40, 15 + i);
+			i += 2;
+		}
+	} while (1);
+
+	SaveData(filename);
+
+	ofstream savedfile;
+
+	savedfile.open("gamelist.txt", ios::app);
+	savedfile << filename << endl;
+	savedfile.close();
+}
+
+void LoadGame(string filename) {
+	system("cls");
+	system("color F0");
+
+	LoadData(filename);
+
+	GotoXY(_X, _Y);
 }
 
 //GamePlay của PvP
@@ -367,6 +421,10 @@ void PlayPvP()
 					}
 				}
 				validEnter = true; //Mở khóa
+			}
+			else if (_COMMAND == 'L') {
+				SaveGame();
+				Play();
 			}
 		}
 	}
@@ -650,6 +708,10 @@ void PlayPvC()
 						count = 0;
 				}
 				validEnter = true; //Mở khóa
+			}
+			else if (_COMMAND == 'L') {
+				SaveGame();
+				return;
 			}
 		}
 	}
