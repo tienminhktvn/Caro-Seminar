@@ -1,11 +1,10 @@
-#include <Windows.h>
-#include <stdlib.h>
 #include <string>
-#include <conio.h>
 #include <iostream>
+#include <stdio.h>
+#include <conio.h>
+#include <time.h>
 #include <fstream>
 #include <vector>
-#include <string>
 using namespace std;
 
 #define BOARD_SIZE 12 //Kích thước ma trận bàn cờ
@@ -15,13 +14,18 @@ using namespace std;
 #define OPTION_WIDTH  20
 
 
+//Khai báo kiểu dữ liệu
 extern struct _POINT { int x, y, c; }; //x: tọa độ dòng, y: tọa độ cột, c: đánh dấu
 extern _POINT _A[BOARD_SIZE][BOARD_SIZE]; //Ma trận bàn cờ
 extern bool _TURN; //true là lượt người thứ nhất và false là lượt người thứ hai
 extern int _COMMAND; //Biến nhận giá trị phím người dùng nhập
 extern int _X, _Y; //Tọa độ hiện hành trên màn hình bàn cờ
 
-
+struct Player
+{
+	string name;
+	int score;
+};
 
 extern struct MENU
 {
@@ -30,18 +34,15 @@ extern struct MENU
 	string opt3;
 	string opt4;
 };
-
 extern MENU menu;
 extern int _OPTION;
-extern int Total_game;
 extern int Score1;
 extern int Score2;
 extern string Player1_name;
 extern string Player2_name;
+extern int win_location[11];
 
-void ResetGame();
-
-//Hàm View
+//nhom ham view
 int ProcessFinish(int pWhoWin);
 void AskContinue();
 void GotoXY(int x, int y);
@@ -54,665 +55,1135 @@ void Draw_newgame_opt(int x, int y, int w, int h);
 void Highlight_Play_turn(int x, int y, int w, int h, int color, int player);
 void DrawBoard(int pSize);
 void DrawTurn(int x, int y, int w, int h);
-void DrawBoard(int pSize);
-void DrawTurn(int x, int y, int w, int h);
 void PrintText(string text, int color, int x, int y);
 void DrawLoaded(_POINT _A[][BOARD_SIZE]);
-//Hàm Control
-void ExitGame();
-void MoveRight();
-void MoveLeft();
-void MoveUp();
-void MoveDown();
-void MenuUp();
-void MenuDown();
+void DrawAbout();
+
+//nhom ham control
+void MenuUp(int& o);
+void MenuDown(int& o, int n);
+void StartGame();
+void PlayPvP();
+void PlayPvC();
 void SaveGame();
 void LoadGame(string filename);
-//Hàm Model
-void Play();
-int CheckTick(int pX, int pY);
-int CheckBoard(int pX, int pY);
-int TestBoard();
-void ResetData();
-int Bot(int _X, int _Y, int& pX, int& pY);
-void SaveData(string filename);
-void LoadData(string filename);
-vector<string> LoadFiles();
-bool CheckFileExistence(string filename);
-/*Hàm dọn dẹp tài nguyên*/
-void StartGame()
+
+/*Hàm khởi tạo dữ liệu mặc định ban đầu cho ma trận bàn cờ*/
+void ResetGame()
 {
-	system("cls");
+	for (int i = 0; i < BOARD_SIZE; i++)
+	{
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			_A[i][j].x = 4 * j + LEFT + 2; //Trùng với hoành độ màn hình bàn cờ
+			_A[i][j].y = 2 * i + TOP + 1; //Trùng với tung độ màn hình bàn cờ
+			_A[i][j].c = 0; //0: chưa đánh dấu, -1: true đánh, 1: fasle đánh
+		}
+	}
+	_TURN = true; _COMMAND = -1; //Gán lượt và phím mặt định
+	_X = _A[0][0].x; _Y = _A[0][0].y; //Thiết lập lại tọa đồ hiện hành ban đầu
+}
+
+/*Hàm khởi tạo lại dữ liệu cho một game mới khi new game*/
+void ResetData()
+{
 	ResetGame();
-	DrawBox(55, 19, 60, 8);
-	DrawTurn(55, _A[0][BOARD_SIZE - 1].y, 60, 12);
-	DrawBoard(BOARD_SIZE);
-	DrawOption(_A[0][0].x - 2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 10, 2, 15, 0, "M:MENU");
-	DrawOption(_A[0][BOARD_SIZE - 1].x - 12, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 14, 2, 15, 0, "L:SAVE GAME");
+	Score1 = 0;
+	Score2 = 0;
+	Player1_name = "";
+	Player2_name = "";
 }
 
-/*Hàm thoát game*/
-void ExitGame()
+//Kiểm tra đã đủ 80% quân cờ trên bàn cờ chưa
+bool isfull()
 {
-	system("cls");
-}
-
-/*Hàm di chuyển sang phải*/
-void MoveRight()
-{
-	if (_X < _A[BOARD_SIZE - 1][BOARD_SIZE - 1].x)
+	int dem = 0;
+	for (int i = 0; i < BOARD_SIZE; i++)
 	{
-		_X += 4;
-		GotoXY(_X, _Y);
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].c != 0)
+				dem++;
+		}
+	}
+	float phan_tram = (1.0 * dem) / (BOARD_SIZE * BOARD_SIZE);
+	if (phan_tram >= 0.8)
+		return true;
+	return false;
+}
+
+//Các hàm kiểm tra có win không
+bool xet_dong() {
+	int demX = 0, demO = 0;
+	for (int i = 0; i < BOARD_SIZE; i++)
+	{
+		demX = 0;
+		demO = 0;
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].c == 1) //O
+				demO++;
+			else
+			{
+				if (_A[i][j].c == -1) //X
+				{
+					if (demO >= 5 && _A[i][j - (demO + 1)].c != -1)
+						demO = 5;
+					else
+						demO = 0;
+				}
+				if (_A[i][j].c == 0) // Chưa đánh dấu
+				{
+					if (demO >= 5)
+						demO = 5;
+					else
+						demO = 0;
+				}
+			}
+
+			if (_A[i][j].c == -1) //X
+				demX++;
+			else
+			{
+				if (_A[i][j].c == 1) //O
+				{
+					if (demX >= 5 && _A[i][j - (demX + 1)].c != 1)
+						demX = 5;
+					else
+						demX = 0;
+				}
+				if (_A[i][j].c == 0)
+				{
+					if (demX >= 5)
+						demX = 5;
+					else
+						demX = 0;
+				}
+			}
+
+			if (demO >= 5 || demX >= 5)
+			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				//Hilight giùm trong hàm này nha nhã
+				for (int cot = j, temp = 1; cot >= j - 4; cot--, temp += 2)
+				{
+					/*cout << cot << " ";*/
+					win_location[temp] = i;//i la dong
+					win_location[temp + 1] = cot;
+				}
+
+				return true;
+			}
+		}
 	}
 }
 
-/*Hàm di chuyển sang trái*/
-void MoveLeft()
+bool xet_cot()
 {
-	if (_X > _A[0][0].x)
+	int demO = 0, demX = 0;
+	for (int j = 0; j < BOARD_SIZE; j++)
 	{
-		_X -= 4;
-		GotoXY(_X, _Y);
+		demO = 0;
+		demX = 0;
+		for (int i = 0; i < BOARD_SIZE; i++)
+
+		{
+			if (_A[i][j].c == 1) //O
+				demO++;
+			else
+			{
+				if (_A[i][j].c == -1) //X
+				{
+					if (demO >= 5 && _A[i - (demO + 1)][j].c != -1) //X
+						demO = 5;
+					else
+						demO = 0;
+				}
+				if (_A[i][j].c == 0)
+					if (demO >= 5)
+						demO = 5;
+					else
+						demO = 0;
+			}
+
+			if (_A[i][j].c == -1) //X
+				demX++;
+			else
+			{
+				if (_A[i][j].c == 1) //O
+				{
+					if (demX >= 5 && _A[i - demX + 1][j].c != 1) //O
+						demX = 5;
+					else
+						demX = 0;
+
+				}
+				if (_A[i][j].c == 0)
+					if (demX >= 5)
+						demX = 5;
+					else
+						demX = 0;
+			}
+
+			if (demO >= 5 || demX >= 5)
+			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, temp = 1; dong >= i - 4; dong--, temp += 2)
+				{
+					win_location[temp] = dong;
+					win_location[temp + 1] = j;
+				}
+				return true;
+			}
+		}
 	}
 }
 
-/*Hàm di chuyển xuống*/
-void MoveDown()
+bool xet_cheo_duoi_phu()
 {
-	if (_Y < _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y)
+	int demO = 0, demX = 0;
+	int j = 0, k = 0;
+	for (int i = 0; i < BOARD_SIZE; i++)
 	{
-		_Y += 2;
-		GotoXY(_X, _Y);
+		demO = 0;
+		demX = 0;
+
+		k = i;
+		j = BOARD_SIZE - 1;
+		while (k < BOARD_SIZE && j >= 0)
+		{
+
+			if (_A[k][j].c == 1) //O
+				demO++;
+			else
+			{
+				if (_A[k][j].c == -1) //X
+				{
+					if (demO >= 5 && (k - demO >= 0 && j + demO < BOARD_SIZE && _A[k - demO][j + demO].c != -1))
+						demO = 5;
+					else
+						demO = 0;
+				}
+				if (_A[k][j].c == 0)
+					if (demO >= 5)
+						demO = 5;
+					else
+						demO = 0;
+			}
+			if (_A[k][j].c == -1) //X
+				demX++;
+			else
+			{
+				if (_A[k][j].c == 1) //O
+				{
+					if (demX >= 5 && (k - demX >= 0 && j + demX < BOARD_SIZE && _A[k - demX][j + demX].c == 1))
+						demX = 5;
+					else
+						demX = 0;
+				}
+				if (_A[k][j].c == 0)
+					if (demX >= 5)
+						demX = 5;
+					else
+						demX = 0;
+			}
+
+			if (demO >= 5 || demX >= 5)
+			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = k, cot = j, temp = 1; dong >= k - 4; dong--, cot++, temp += 2)
+				{
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
+				}
+				return true;
+			}
+
+			k++;
+			j--;
+		}
+	}
+	return false;
+}
+
+bool xet_cheo_tren_phu()
+{
+	int demO = 0, demX = 0;
+	int i = 0, k = 0;
+	for (int j = 1; j < BOARD_SIZE; j++)
+	{
+		demO = 0;
+		demX = 0;
+
+		k = j;
+		i = 0;
+		while (k > 0)
+		{
+			if (_A[i][k].c == 1) //O
+				demO++;
+			else
+			{
+				if (_A[i][k].c == -1) //X
+				{
+					if (demO >= 5 && _A[i - demO + 1][k + demO + 1].c != -1) //X
+						demO = 5;
+					else
+						demO = 0;
+				}
+				if (_A[i][k].c == 0)
+					if (demO >= 5)
+						demO = 5;
+					else
+						demO = 0;
+			}
+			if (_A[i][k].c == -1) //X
+				demX++;
+			else
+			{
+				if (_A[i][k].c == 1) //O
+				{
+					if (demX >= 5 && _A[i - demX + 1][k + demX + 1].c != 1)
+						demX = 5;
+					else
+						demX = 0;
+				}
+				if (_A[i][k].c == 0)
+					if (demX >= 5)
+						demX = 5;
+					else
+						demX = 0;
+			}
+
+			if (demO >= 5 || demX >= 5)
+			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, cot = k, temp = 1; dong >= i - 4; dong--, cot++, temp += 2)
+				{
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
+				}
+				return true;
+			}
+
+			k--;
+			i++;
+		}
 	}
 }
 
-/*Hàm di chuyển lên*/
-void MoveUp()
+bool xet_chinh()
 {
-	if (_Y > _A[0][0].y)
+	int demO = 0, demX = 0;
+	for (int i = 0; i <= BOARD_SIZE - 5; i++) {
+		for (int j = 0; j <= BOARD_SIZE - 5; j++) {
+			demO = 0;
+			demX = 0;
+			for (int k = 0; k < 5; k++) {
+				if (_A[i + k][j + k].c == 1) { //O
+					demO++;
+				}
+				else {
+					if (_A[i + k][j + k].c == -1) { //X
+						if (demO >= 5) {
+							demO = 5;
+						}
+						else {
+							demO = 0;
+						}
+					}
+					else { // Chưa đánh dấu
+						if (demO >= 5) {
+							demO = 5;
+						}
+						else {
+							demO = 0;
+						}
+					}
+				}
+
+				if (_A[i + k][j + k].c == -1) { //X
+					demX++;
+				}
+				else {
+					if (_A[i + k][j + k].c == 1) { //O
+						if (demX >= 5) {
+							demX = 5;
+						}
+						else {
+							demX = 0;
+						}
+					}
+					else { // Chưa đánh dấu
+						if (demX >= 5) {
+							demX = 5;
+						}
+						else {
+							demX = 0;
+						}
+					}
+				}
+			}
+			if (demO >= 5 || demX >= 5)
+			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, cot = j, temp = 1; dong <= i + 4; dong++, cot++, temp += 2)
+				{
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool xet_cheo_phu_ben_trai_cung()
+{
+	int demO = 0, demX = 0;
+	int i = 0, k = 0;
+	for (int j = 0; j < BOARD_SIZE; j++)
 	{
-		_Y -= 2;
-		GotoXY(_X, _Y);
+		demO = 0;
+		demX = 0;
+
+		k = j;
+		i = 0;
+		while (k >= 0 && i < BOARD_SIZE)
+		{
+			if (_A[i][k].c == 1) //O
+				demO++;
+			else
+			{
+				if (_A[i][k].c == -1) //X
+				{
+					if (demO >= 5 && (i - demO < 0 || k + demO >= BOARD_SIZE || _A[i - demO][k + demO].c != -1)) //X
+						demO = 5;
+					else
+						demO = 0;
+				}
+				if (_A[i][k].c == 0)
+					if (demO >= 5)
+						demO = 5;
+					else
+						demO = 0;
+			}
+			if (_A[i][k].c == -1) //X
+				demX++;
+			else
+			{
+				if (_A[i][k].c == 1) //O
+				{
+					if (demX >= 5 && (i - demX < 0 || k + demX >= BOARD_SIZE || _A[i - demX][k + demX].c != 1))
+						demX = 5;
+					else
+						demX = 0;
+				}
+				if (_A[i][k].c == 0)
+					if (demX >= 5)
+						demX = 5;
+					else
+						demX = 0;
+			}
+			if (demO >= 5 || demX >= 5)
+			{
+				if (demO >= 5)
+					win_location[0] = 1;
+				else win_location[0] = -1;
+
+				for (int dong = i, cot = k, temp = 1; cot <= k + 4; dong--, cot++, temp += 2)
+				{
+					win_location[temp] = dong;
+					win_location[temp + 1] = cot;
+				}
+				return true;
+			}
+			k--;
+			i++;
+		}
+	}
+	return false;
+}
+
+//Hàm kiểm tra thắng
+bool WinTest()
+{
+	if (xet_dong() == true)
+		return true;
+	if (xet_cot() == true)
+		return true;
+	if (xet_cheo_duoi_phu() == true)
+		return true;
+	if (xet_cheo_tren_phu() == true)
+		return true;
+	if (xet_chinh() == true)
+		return true;
+	if (xet_cheo_phu_ben_trai_cung() == true) 
+		return true;
+	return false;
+}
+
+/*Hàm kiểm ta xem có người thắng/thua/hòa*/
+int TestBoard()
+{
+	if (isfull() == true) return 0; //hòa
+	else
+	{
+		if (WinTest() == true)
+			return (_TURN == true ? -1 : 1);
+		else
+			return 2;
 	}
 }
 
-/*Hàm di chuyển lên trong menu*/
-void MenuUp(int& o)
+/*Hàm hổ trợ xem đang lượt của ai khi enter*/
+int CheckBoard(int pX, int pY)
 {
-	if (o != 1)
+	for (int i = 0; i < BOARD_SIZE; i++)
 	{
-		_Y -= (OPTION_HIGH + 1);
-		GotoXY(_X, _Y);
-		o--;
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].x == pX && _A[i][j].y == pY && _A[i][j].c == 0)
+			{
+				if (_TURN == true) //Lượt của người 1
+					_A[i][j].c = -1; //c= -1 tức là người 1 đánh dấu
+				else _A[i][j].c = 1; //c=1 tức là người chơi 2 đánh dấu
+				return _A[i][j].c;
+			}
+		}
+	}
+	return 0;
+}
+
+/*Hàm kiểm tra ô đã đánh chưa*/
+int CheckTick(int pX, int pY)
+{
+	for (int i = 0; i < BOARD_SIZE; i++)
+	{
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].x == pX && _A[i][j].y == pY)
+				return _A[i][j].c;
+		}
 	}
 }
 
-/*Hàm di chuyển xuống trong menu*/
-void MenuDown(int& o, int n)
-{
-	if (o != n)
+//Hàm tìm địa chỉ hàng cột của ô với địa chỉ cho trước
+int searchAddressOfBoard(int pX, int pY, int& row, int& col) {
+	for (int i = 0; i < BOARD_SIZE; i++)
 	{
-		_Y += (OPTION_HIGH + 1);
-		GotoXY(_X, _Y);
-		o++;
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			if (_A[i][j].x == pX && _A[i][j].y == pY)
+			{
+				row = i;
+				col = j;
+				return 1;
+			}
+		}
 	}
+	return 0;
 }
 
-void SaveGame() {
-	string filename;
-	int i = 2;
-	system("cls");
-	system("color F0");
-	PrintText("Nhap file name ban muon luu: ", 15, 40, 15);
-	do {
-		getline(cin, filename);
-		filename += ".txt";
-		if (!CheckFileExistence(filename)) {
+//Hàm tạo bot chơi với người chơi, lượt của bot là người thứ 2 hay _TURN = false
+int Bot(int _X, int _Y, int& pX, int& pY)
+{
+	srand(time(NULL));
+
+	int row, col;
+	searchAddressOfBoard(_X, _Y, row, col);
+
+	//Trường hợp đánh nhiều ô liên tiếp
+
+	//Hàng
+	if (_A[row][col - 2].c == -1 && _A[row][col - 1].c == -1 && _A[row][col].c == -1)
+	{
+		if (col + 1 < BOARD_SIZE)
+		{
+			if (_A[row][col + 1].c == 0)
+			{
+				pX = row;
+				pY = col + 1;
+				_A[row][col + 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row][col + 1].c == -1 && _A[row][col + 2].c == -1 && _A[row][col + 3].c == -1)
+	{
+		if (col - 1 >= 0)
+		{
+			if (_A[row][col - 1].c == 0)
+			{
+				pX = row;
+				pY = col - 1;
+				_A[row][col - 1].c = 1;
+				return 1;
+			}
+		}
+	}
+
+	//Cột
+	if (_A[row][col].c == -1 && _A[row - 1][col].c == -1 && _A[row - 2][col].c == -1)
+	{
+		if (row + 1 < BOARD_SIZE)
+		{
+			if (_A[row + 1][col].c == 0)
+			{
+				pX = row + 1;
+				pY = col;
+				_A[row + 1][col].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row + 1][col].c == -1 && _A[row + 2][col].c == -1 && _A[row + 3][col].c == -1)
+	{
+		if (row - 1 >= 0)
+		{
+			if (_A[row - 1][col].c == 0)
+			{
+				pX = row - 1;
+				pY = col;
+				_A[row - 1][col].c = 1;
+				return 1;
+			}
+		}
+	}
+
+	//Chéo
+
+	//chéo trên phụ
+	if (_A[row][col].c == -1 && _A[row + 1][col - 1].c == -1 && _A[row + 2][col - 2].c == -1)
+	{
+		if (row - 1 >= 0 && col + 1 < BOARD_SIZE)
+		{
+			if (_A[row - 1][col + 1].c == 0)
+			{
+				pX = row - 1;
+				pY = col + 1;
+				_A[row - 1][col + 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row - 1][col + 1].c == -1 && _A[row - 2][col + 2].c == -1 && _A[row - 3][col + 3].c == -1)
+	{
+		if (row + 1 < BOARD_SIZE && col - 1 >= 0)
+		{
+			if (_A[row + 1][col - 1].c == 0)
+			{
+				pX = row + 1;
+				pY = col - 1;
+				_A[row + 1][col - 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	//Chéo trên chính
+	if (_A[row][col].c == -1 && _A[row + 1][col + 1].c == -1 && _A[row + 2][col + 2].c == -1)
+	{
+		if (row - 1 >= 0 && col - 1 >= 0)
+		{
+			if (_A[row - 1][col - 1].c == 0)
+			{
+				pX = row - 1;
+				pY = col - 1;
+				_A[row - 1][col - 1].c = 1;
+				return 1;
+			}
+		}
+	}
+	if (_A[row][col].c == -1 && _A[row - 1][col - 1].c == -1 && _A[row - 2][col - 2].c == -1 && _A[row - 3][col - 3].c == -1)
+	{
+		if (row + 1 < BOARD_SIZE && col + 1 < BOARD_SIZE)
+		{
+			if (_A[row + 1][col + 1].c == 0)
+			{
+				pX = row + 1;
+				pY = col + 1;
+				_A[row + 1][col + 1].c = 1;
+				return 1;
+			}
+		}
+	}
+
+	//Trường hợp đánh rời rạc
+	int bestVal = 0;
+	while (bestVal = rand() % 8 + 1)
+	{
+		switch (bestVal)
+		{
+		case 1:
+		{
+			for (int i = col; i < BOARD_SIZE; i++)
+			{
+				if (_A[row][i].c == 0)
+				{
+					pX = row;
+					pY = i;
+					_A[row][i].c = 1;
+					return 1;
+				}
+			}
 			break;
 		}
-		else {
-			GotoXY(60, 15 + i);
-			PrintText("Nhap lai ten khac: ", 15, 40, 15 + i);
-			i += 2;
+		case 2:
+		{
+			for (int i = col; i >= 0; i--)
+			{
+				if (_A[row][i].c == 0)
+				{
+					pX = row;
+					pY = i;
+					_A[row][i].c = 1;
+					return 1;
+				}
+			}
+			break;
 		}
-	} while (1);
+		case 3:
+		{
+			for (int i = row; i < BOARD_SIZE; i++)
+			{
+				if (_A[i][col].c == 0)
+				{
+					pX = i;
+					pY = col;
+					_A[i][col].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 4:
+		{
+			for (int i = row; i >= 0; i--)
+			{
+				if (_A[i][col].c == 0)
+				{
+					pX = i;
+					pY = col;
+					_A[i][col].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 5:
+		{
+			for (int i = row, j = col; i >= 0 && j < BOARD_SIZE; i--, j++)
+			{
+				if (row <= 1)
+					break;
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 6:
+		{
+			for (int i = row, j = col; i >= 0 && j >= 0; i--, j--)
+			{
+				if (row <= 1)
+					break;
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 7:
+		{
+			for (int i = row, j = col; i < BOARD_SIZE && j < BOARD_SIZE; i++, j++)
+			{
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		case 8:
+		{
+			for (int i = row, j = col; i < BOARD_SIZE && j >= 0; i++, j--)
+			{
+				if (_A[i][j].c == 0)
+				{
+					pX = i;
+					pY = j;
+					_A[i][j].c = 1;
+					return 1;
+				}
+			}
+			break;
+		}
+		}
+	}
 
-	SaveData(filename);
-
-	ofstream savedfile;
-
-	savedfile.open("gamelist.txt", ios::app);
-	savedfile << filename << endl;
-	savedfile.close();
+	return 0;
 }
 
-void LoadGame(string filename) {
-	system("cls");
-	system("color F0");
-
-	LoadData(filename);
-
-	GotoXY(_X, _Y);
-}
-
-//GamePlay của PvP
-void PlayPvP()
+void InputPvP(int x, int y)
 {
-	bool validEnter = true;
+	SetColor(15, 0);
+	system("cls");
+	GotoXY(x, y);
+	cout << "Nhap ten Player 1: ";
+	char c;
 	while (1)
 	{
-		_COMMAND = toupper(_getch());
-		if (_COMMAND == 'M')
+		c = toupper(_getch());
+		if (c == 13) break;
+		if (c == 8)
 		{
-			ResetData();
-			return;
+			Player1_name.pop_back();
+			GotoXY(x + 19, y);
+			cout << Player1_name;
+			cout << " ";
+			GotoXY(x + 19 + Player1_name.length(), y);
 		}
 		else
 		{
-			if (_COMMAND == 'A')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveLeft();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 'W')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveUp();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 'S')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveDown();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 'D')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveRight();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 13) //Nhấn Enter
-			{
-				switch (CheckBoard(_X, _Y))
-				{
-				case -1:
-					HighLight(_X - 1, _Y, 3, 1, 15);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					break;
-				case 1:
-					HighLight(_X - 1, _Y, 3, 1, 15);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					break;
-				case 0:
-					validEnter = false; //Khi đánh vào ô đã đánh rồi
-				}
-				//Kiểm tra và xử lý thắng thua
-				if (validEnter == true)
-				{
-					switch (ProcessFinish(TestBoard()))
-					{
-					case 2:
-					{
-						if (_TURN == true)
-						{
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
-						}
-						else
-						{
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
-						}
-						break;
-					}
-					case -1:
-					case 1:
-					case 0:
-						AskContinue();
-						while (1)
-						{
-							int temp = toupper(_getch());
-							if (temp == 'N')
-							{
-								return;
-							}
-							else if (temp == 'Y')
-							{
-								SetColor(15, 0);
-								StartGame();
-								break;
-							}
-						}
-					}
-				}
-				validEnter = true; //Mở khóa
-			}
-			else if (_COMMAND == 'L') {
-				SaveGame();
-				Play();
-			}
+			cout << c;
+			Player1_name += c;
+		}
+	}
+	GotoXY(x, y + 2);
+	cout << "Nhap ten Player 2: ";
+	while (1)
+	{
+		c = toupper(_getch());
+		if (c == 13) break;
+		if (c == 8)
+		{
+			Player2_name.pop_back();
+			GotoXY(x + 19, y + 2);
+			cout << Player2_name;
+			cout << " ";
+			GotoXY(x + 19 + Player2_name.length(), y + 2);
+		}
+		else
+		{
+			cout << c;
+			Player2_name += c;
 		}
 	}
 }
 
-//GamePlay của PvC
-void PlayPvC()
+void InputPvC(int x, int y)
 {
-	int count = -1;
-	bool validEnter = true;
+	Player2_name = "COMPUTER";
+	SetColor(15, 0);
+	system("cls");
+	GotoXY(x, y);
+	cout << "Nhap ten Player 1: ";
+	char c;
 	while (1)
 	{
-		_COMMAND = toupper(_getch());
-		if (_COMMAND == 'M')
+		c = toupper(_getch());
+		if (c == 13) break;
+		if (c == 8)
 		{
-			ResetData();
-			return;
+			Player1_name.pop_back();
+			GotoXY(x + 19, y);
+			cout << Player1_name;
+			cout << " ";
+			GotoXY(x + 19 + Player1_name.length(), y);
 		}
 		else
 		{
-			if (_COMMAND == 27)
+			cout << c;
+			Player1_name += c;
+		}
+	}
+}
+
+void Newgame_opt()
+{
+	int x = 50;
+	int y = 16;
+	MENU m = { "PvP","PVC" };
+	int opt = 1;
+	Draw_newgame_opt(x, y, OPTION_WIDTH, OPTION_HIGH);
+	while (opt != 0)
+	{
+		_COMMAND = toupper(_getch());
+		if (_COMMAND == 13)
+		{
+			switch (opt)
 			{
-				SetColor(15, 0);
-				ExitGame();
+			case 1:
+				InputPvP(x - 10, y);
+				StartGame();
+				PlayPvP();
+				return;
+			case 2:
+				InputPvC(x - 10, y);
+				StartGame();
+				PlayPvC();
 				return;
 			}
-			else if (_COMMAND == 'A')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveLeft();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 'W')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveUp();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 'S')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveDown();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 'D')
-			{
-				HighLight(_X - 1, _Y, 3, 1, 15);
-				GotoXY(_X, _Y);
-				if (CheckTick(_X, _Y) == -1)
-				{
-					SetColor(15, 0);
-					cout << "X";
-				}
-				else if (CheckTick(_X, _Y) == 1)
-				{
-					SetColor(15, 0);
-					cout << "O";
-				}
-				GotoXY(_X, _Y);
-				MoveRight();
-				if (CheckTick(_X, _Y) == 0)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-				}
-				else if (CheckTick(_X, _Y) == -1)
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					GotoXY(_X, _Y);
-				}
-				else
-				{
-					HighLight(_X - 1, _Y, 3, 1, 14);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "O";
-					GotoXY(_X, _Y);
-				}
-			}
-			else if (_COMMAND == 13) //Nhấn Enter
-			{
-				switch (CheckBoard(_X, _Y))
-				{
-				case -1:
-					HighLight(_X - 1, _Y, 3, 1, 15);
-					GotoXY(_X, _Y);
-					SetColor(14, 0);
-					cout << "X";
-					break;
-				case 0:
-					validEnter = false; //Khi đánh vào ô đã đánh rồi
-				}
-				//Kiểm tra và xử lý thắng thua
-				if (validEnter == true)
-				{
-					switch (ProcessFinish(TestBoard()))
-					{
-					case 2:
-					{
-						if (_TURN == true)
-						{
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
-						}
-						else
-						{
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 1);
-							Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 2);
-						}
-						break;
-					}
-					case -1:
-					case 1:
-					case 0:
-						AskContinue();
-						while (1)
-						{
-							int temp = toupper(_getch());
-							if (temp == 'N')
-							{
-								return;
-							}
-							else if (temp == 'Y')
-							{
-								SetColor(15, 0);
-								StartGame();
-								count = 1; //Gán giá trị xác nhận đã chơi lại
-								break;
-							}
-						}
-					}
-					if (count != 1)
-					{
+		}
+		else if (_COMMAND == 'B')
+		{
+			return;
+		}
+		else if (_COMMAND == 'W')
+		{
+			if (opt == 1)
+				continue;
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, m.opt2);
+			MenuUp(opt);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, m.opt1);
+			GotoXY(_X, _Y);
+		}
+		else if (_COMMAND == 'S')
+		{
+			if (opt == 2)
+				continue;
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, m.opt1);
+			MenuDown(opt, 2);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, m.opt2);
+			GotoXY(_X, _Y);
+		}
+	}
+}
 
-						//Lượt của bot
-						int pX, pY;
-						Bot(_X, _Y, pX, pY);
-						GotoXY(_X, _Y);
-						SetColor(15, 0);
-						cout << "X";
-						GotoXY(_A[pX][pY].x, _A[pX][pY].y);
-						SetColor(14, 0);
-						cout << "O";
-						Sleep(600);
-						Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 14, 1);
-						Highlight_Play_turn(55, _A[0][BOARD_SIZE - 1].y, 60, 12, 15, 2);
-						GotoXY(_A[pX][pY].x, _A[pX][pY].y);
-						SetColor(15, 0);
-						cout << "O";
-						GotoXY(_X, _Y);
-						SetColor(14, 0);
-						cout << "X";
+void SaveData(string filename) {
+	ofstream savefile;
+	savefile.open(filename, ios::out);
 
-						if (count == -2)
-							count = 0;
+	savefile << Player1_name << endl;
+	savefile << Score1 << endl;
+	savefile << Player2_name << endl;
+	savefile << Score2 << endl;
 
-						//Kiểm tra bot có thắng không
-						switch (ProcessFinish(TestBoard()))
-						{
-						case -1:
-						case 1:
-						case 0:
-							AskContinue();
-							while (1)
-							{
-								int temp = toupper(_getch());
-								if (temp == 'N')
-								{
-									return;
-								}
-								else if (temp == 'Y')
-								{
-									SetColor(15, 0);
-									StartGame();
-									count = -2; //Gán giá trị xác nhận máy win và đã chơi lại
-									break;
-								}
-							}
-						}
-					}
-					else
-						count = 0;
+	savefile << _TURN << endl;
+
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			savefile << _A[i][j].c << " ";
+		}
+		savefile << endl;
+	}
+	savefile.close();
+}
+
+void LoadData(string filename) {
+	ifstream loadfile;
+	int turn;
+	Player P[2];
+	loadfile.open(filename, ios::in);
+	for (int i = 0; i < 2; i++) {
+		string name = "";
+		int score = 0;
+		if (i == 1) {
+			loadfile.ignore();
+		}
+		getline(loadfile, name);
+		loadfile >> score;
+		P[i].name = name;
+		P[i].score = score;
+	}
+	loadfile >> turn;
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			int x = 0;
+			loadfile >> x;
+			_A[i][j].x = 4 * j + LEFT + 2; //Trung voi hoanh do ban co
+			_A[i][j].y = 2 * i + TOP + 1; //Trung voi tung do ban co
+			_A[i][j].c = x;
+		}
+	}
+	Player1_name = P[0].name;
+	Score1 = P[0].score;
+	Player2_name = P[1].name;
+	Score2 = P[1].score;
+	_TURN = turn;
+
+	loadfile.close();
+
+	_COMMAND = -1;
+	_X = _A[0][0].x;
+	_Y = _A[0][0].y;
+}
+	
+vector<string> LoadFiles()
+{
+	vector<string> files;
+	string filename;
+
+	ifstream savedFile;
+	savedFile.open("gamelist.txt", fstream::in);
+
+	while (savedFile >> filename)
+	{
+		files.push_back(filename);
+	}
+	savedFile.close();
+
+	return files;
+}
+
+bool CheckFileExistence(string filename) {
+	string name;
+
+	ifstream savedfile;
+	savedfile.open("gamelist.txt", ios::in);
+
+	while (savedfile >> name) {
+		if (name == filename) {
+			savedfile.close();
+			return true;
+		}
+	}
+	savedfile.close();
+	return false;
+}
+
+
+void Play()
+{
+	system("color F0");
+	int x = 50, y = 16;
+	DrawMenu(x, y, OPTION_WIDTH, OPTION_HIGH, menu);
+	_OPTION = 1;
+	while (_OPTION != 0)
+	{
+		_COMMAND = toupper(_getch());
+		if (_COMMAND == 13)
+		{
+			switch (_OPTION)
+			{
+			case 1:
+				Newgame_opt();
+				return;
+			case 2: {
+				system("cls");
+				system("color F0");
+				string filename;
+				vector<string> files;
+				files = LoadFiles();
+				int j = 10;
+				PrintText("Danh sach file game da luu: ", 100, 40, 9);
+				for (int i = 0; i < files.size(); i++) {
+					PrintText(files[i], 15, 40, j);
+					j++;
 				}
-				validEnter = true; //Mở khóa
-			}
-			else if (_COMMAND == 'L') {
-				SaveGame();
+				PrintText("Nhap ten file ban muon tai: ", 100, 40, j);
+				getline(cin, filename);
+				string fileLoad = filename + ".txt";
+				LoadGame(fileLoad);
+				DrawLoaded(_A);
+				GotoXY(_X, _Y);
+				if (Player2_name == "COMPUTER") {
+					PlayPvC();
+				}
+				else { PlayPvP(); };
 				return;
 			}
+			case 3:
+				DrawAbout();
+				return;
+			case 4:
+				system("cls");
+				system("color F0");
+				exit(0);
+			}
+		}
+		else if (_COMMAND == 'W')
+		{
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			switch (_OPTION)
+			{
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt3);
+				break;
+			case 4:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt4);
+				break;
+			}
+			MenuUp(_OPTION);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			switch (_OPTION)
+			{
+			case 1:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt1);
+				break;
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt3);
+				break;
+			}
+			GotoXY(_X, _Y);
+		}
+		else if (_COMMAND == 'S')
+		{
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15);
+			switch (_OPTION)
+			{
+			case 1:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt1);
+				break;
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 15, 0, menu.opt3);
+				break;
+			}
+			MenuDown(_OPTION, 4);
+			HighLight(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14);
+			switch (_OPTION)
+			{
+			case 2:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt2);
+				break;
+			case 3:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt3);
+				break;
+			case 4:
+				DrawOption(_X, _Y, OPTION_WIDTH, OPTION_HIGH, 14, 0, menu.opt4);
+				break;
+			}
+			GotoXY(_X, _Y);
 		}
 	}
 }
